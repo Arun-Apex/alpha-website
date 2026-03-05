@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: n8n_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: n8n
+      POSTGRES_PASSWORD: Octopus@1919
+      POSTGRES_DB: n8n
+      TZ: Asia/Bangkok
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "5678:5678"
+    environment:
+      TZ: Asia/Bangkok
+
+      # --- Basic login protection (if exposed to internet) ---
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: "admin"
+      N8N_BASIC_AUTH_PASSWORD: "Octopus@1919"
+
+      # --- Public URL settings (subpath: /n8n) ---
+      N8N_HOST: "alphadigital.media"
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: "https"
+      N8N_PATH: "/n8n/"
+      N8N_EDITOR_BASE_URL: "https://alphadigital.media/n8n/"
+      WEBHOOK_URL: "https://alphadigital.media/n8n/"
+      N8N_SECURE_COOKIE: "true"
+
+      # --- IMPORTANT behind nginx reverse proxy ---
+      # nginx is on the host, proxying to n8n on localhost:5678
+      N8N_PROXY_HOPS: "1"
+      N8N_TRUSTED_PROXIES: "127.0.0.1,::1"
+
+      # --- Database (Postgres) ---
+      DB_TYPE: "postgresdb"
+      DB_POSTGRESDB_HOST: "postgres"
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_DATABASE: "n8n"
+      DB_POSTGRESDB_USER: "n8n"
+      DB_POSTGRESDB_PASSWORD: "Octopus@1919"
+
+      # --- Encryption key for stored credentials (keep constant) ---
+      N8N_ENCRYPTION_KEY: "5de8da36f1ebc981527a4ce33fe60d686e7a59899bd9a3ecc66ccc95be955685"
+
+    volumes:
+      - ./n8n_data:/home/node/.n8n

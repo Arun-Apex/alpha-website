@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบคำนวณราคาพิมพ์</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<script>var _PC_STAFF = true;</script>
+
+<!-- ══════════════════════════════════════════════════
+     SHARED STYLES
+══════════════════════════════════════════════════ -->
+<style>
+:root{--accent:#4f46e5;--accent2:#7c3aed;--bg:#f1f5f9;--white:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;--muted2:#94a3b8}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);font-family:'Sarabun','Noto Sans Thai',sans-serif;color:var(--text);min-height:100vh}
+
+/* ── Tab Nav ── */
+.app-header{background:linear-gradient(135deg,var(--accent),var(--accent2));padding:28px 24px 0;text-align:center}
+.app-header__title{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;margin:0 0 4px}
+.app-header__sub{font-size:13px;color:rgba(255,255,255,.7);margin:0 0 24px}
+.tab-bar{display:flex;justify-content:center;gap:4px;max-width:600px;margin:0 auto}
+.tab-btn{flex:1;padding:12px 20px;background:rgba(255,255,255,.15);border:none;border-radius:12px 12px 0 0;color:rgba(255,255,255,.8);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.tab-btn:hover{background:rgba(255,255,255,.25);color:#fff}
+.tab-btn.active{background:#fff;color:var(--accent);font-weight:800}
+.tab-btn .tab-icon{font-size:18px}
+
+/* ── Sections ── */
+.tab-content{display:none;animation:fadeIn .2s ease}
+.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Shared Panel Styles ── */
+.calc-wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.calc-panel{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:12px}
+.calc-panel--hidden{display:none}
+.calc-panel__title{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+.calc-panel__num{width:22px;height:22px;background:var(--accent);color:#fff;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+
+/* ── Inputs ── */
+.calc-select,.calc-input{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:9px 13px;font-size:14px;font-family:inherit;background:var(--white);color:var(--text);transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.calc-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.calc-select:focus,.calc-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.calc-select:disabled,.calc-input:disabled{background:#f8fafc;color:var(--muted2);cursor:not-allowed}
+.calc-label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.req{color:#ef4444}
+
+/* ── Grids ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:640px){.g2,.g3{grid-template-columns:1fr}}
+
+/* ── Buttons ── */
+.calc-mode-btn{flex:1;padding:9px 12px;border:1.5px solid var(--border);background:#f8fafc;border-radius:9px;cursor:pointer;font-size:13px;font-family:inherit;color:var(--muted);transition:all .2s;font-weight:500;white-space:nowrap}
+.calc-mode-btn:hover{border-color:var(--accent)}
+.calc-mode-btn--active{background:var(--accent);border-color:transparent;color:#fff;font-weight:700}
+.calc-cat-btn{border:1.5px solid var(--border);background:#f8fafc;color:#475569;border-radius:9px;padding:7px 14px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .2s;font-weight:500}
+.calc-cat-btn:hover{border-color:var(--accent);color:var(--accent)}
+.calc-cat-btn.active{background:var(--accent);border-color:transparent;color:#fff;font-weight:700}
+
+/* ── Misc ── */
+.calc-cats{display:flex;flex-wrap:wrap;gap:8px}
+.calc-info-box{background:rgba(79,70,229,.05);border:1px solid rgba(79,70,229,.2);border-radius:9px;padding:10px 14px;font-size:13px;color:#334155}
+.calc-note{margin-top:10px;padding:9px 13px;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;font-size:13px;color:#92400e}
+.calc-note--hidden{display:none}
+.calc-area-display{margin-top:12px;padding:9px 13px;background:rgba(79,70,229,.05);border-radius:8px;font-size:13px;font-weight:700;color:var(--accent)}
+.calc-area-display--hidden{display:none}
+.calc-toggles{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+.calc-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:#475569;user-select:none}
+.calc-toggle input[type="checkbox"]{display:none}
+.calc-toggle__track{width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
+.calc-toggle__track::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.calc-toggle input:checked+.calc-toggle__track{background:var(--accent)}
+.calc-toggle input:checked+.calc-toggle__track::after{transform:translateX(16px)}
+.calc-override{margin-top:12px}
+.calc-override--hidden{display:none}
+
+/* ── Mount grade ── */
+.mount-grade-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:10px}
+.mount-grade-btn{border:2px solid var(--border);background:#f8fafc;border-radius:10px;padding:10px 10px 8px;cursor:pointer;text-align:left;font-family:inherit;transition:all .2s;display:flex;flex-direction:column;gap:3px}
+.mount-grade-btn:hover{border-color:var(--accent)}
+.mount-grade-btn.active{border-color:var(--accent);background:rgba(79,70,229,.05)}
+.mg-label{font-size:13px;font-weight:700;color:var(--text)}
+.mg-cost{font-size:13px;font-weight:700;color:var(--accent)}
+.mg-desc{font-size:11px;color:var(--muted2)}
+
+/* ── Tier table ── */
+.tier-table-wrap{overflow-x:auto}
+.tier-table{width:100%;border-collapse:collapse;font-size:12px}
+.tier-table th{color:var(--accent);font-weight:700;padding:7px 10px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap}
+.tier-table td{padding:7px 10px;border-bottom:1px solid #f1f5f9;color:var(--muted)}
+.tier-table tr.tier-active td{background:rgba(79,70,229,.05);color:var(--text);font-weight:600}
+.tier-ratio-cell{color:var(--accent);font-weight:800;font-size:14px}
+
+/* ── Result panel (calc 1) ── */
+.calc-result{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:12px}
+.calc-result--hidden{display:none}
+.result-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.result-row:last-child{border-bottom:none}
+.result-row__label{color:var(--muted);max-width:65%}
+.result-row__label small{display:block;font-size:11px;color:var(--muted2);margin-top:1px}
+.result-row__val{color:var(--text);font-weight:500;white-space:nowrap;margin-left:8px}
+.result-row--accent .result-row__label{color:#334155;font-weight:600}
+.result-row--accent .result-row__val{color:#f59e0b;font-weight:700}
+.result-row--warn .result-row__label{color:#92400e;font-weight:600}
+.result-row--warn .result-row__val{color:#d97706;font-weight:700}
+.result-row--big .result-row__label{font-size:14px;font-weight:700;color:var(--text)}
+.result-row--big .result-row__val{font-size:15px;font-weight:700}
+.result-final{margin-top:16px;border-radius:12px;padding:22px;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.result-final__prices{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:8px}
+.result-final__price-block{text-align:center;padding:6px 10px}
+.result-final__price-block+.result-final__price-block{border-left:1px solid rgba(255,255,255,.2)}
+.result-final__block-label{font-size:11px;opacity:.7;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.result-final__amount{font-size:40px;font-weight:800;letter-spacing:-1px;line-height:1}
+.result-final__amount span{font-size:16px;font-weight:400;opacity:.7;margin-left:4px}
+.result-final__amount--sub{font-size:28px}
+.result-final__rounded{font-size:11px;opacity:.5;margin-top:3px;text-align:center}
+.result-final__meta{display:flex;justify-content:center;gap:16px;margin-top:12px;font-size:12px;opacity:.7;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.15);padding-top:10px}
+
+/* ── Waste/Layout panels ── */
+.layout-panel,.waste-panel{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.layout-panel__title,.waste-panel__title{display:flex;align-items:center;gap:8px;font-weight:700;color:#475569;margin-bottom:12px;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.waste-step{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.waste-step:last-child{border-bottom:none}
+.waste-step__num{width:20px;height:20px;border-radius:50%;background:var(--border);color:var(--muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.waste-step__body{flex:1}
+.waste-step__label{color:#374151;font-weight:600;margin-bottom:2px}
+.waste-step__detail{color:var(--muted2);font-size:11px;line-height:1.5}
+.waste-step__val{font-weight:700;color:var(--accent);white-space:nowrap;margin-left:auto;padding-left:12px;font-size:13px}
+.waste-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:2px solid var(--border);font-weight:700}
+.waste-total__label{color:#374151}
+.waste-total__val{font-size:15px;color:var(--accent)}
+.waste-toggle{cursor:pointer;font-size:11px;color:var(--muted2);text-decoration:underline;background:none;border:none;font-family:inherit;padding:0;margin-left:8px}
+
+/* ══════════════════════════════
+   CALCULATOR 2 — Sticker Layout
+══════════════════════════════ */
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px}
+@media(max-width:768px){.sc-grid{grid-template-columns:1fr}}
+.sc-canvas-wrap{border:1.5px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}
+.sc-canvas{width:100%;max-width:100%;height:auto;display:block}
+.sc-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+@media(max-width:768px){.sc-result-grid{grid-template-columns:1fr}}
+.sc-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+.sc-card-title{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.sc-result-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.sc-result-row:last-child{border-bottom:none}
+.sc-result-label{color:var(--muted);max-width:60%;line-height:1.4}
+.sc-result-value{color:var(--accent);font-weight:700;white-space:nowrap;margin-left:8px;font-size:14px}
+.sc-result-value.big{font-size:20px;color:var(--text)}
+.sc-divider{border:0;border-top:1px dashed var(--border);margin:10px 0}
+.sc-grand{margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;padding:18px 20px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.sc-grand__label{font-size:13px;opacity:.8}
+.sc-grand__value{font-size:36px;font-weight:800;letter-spacing:-1px}
+.sc-grand__value span{font-size:15px;font-weight:400;opacity:.7;margin-left:3px}
+.sc-grand__sub{font-size:12px;opacity:.65;margin-top:3px}
+.sc-radio-group{display:flex;gap:8px;flex-wrap:wrap}
+.sc-radio-label{display:flex;align-items:center;gap:6px;padding:7px 13px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;font-size:13px;color:var(--muted);font-weight:500;transition:all .2s;user-select:none}
+.sc-radio-label:has(input:checked){background:var(--accent);border-color:transparent;color:#fff;font-weight:700}
+.sc-radio-label input{display:none}
+.sc-note{font-size:11px;color:var(--muted2);margin-top:8px;line-height:1.5}
+.sc-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;background:rgba(79,70,229,.1);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.5px}
+.sc-mode-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:11px;font-weight:700;letter-spacing:.5px}
+</style>
+
+<!-- ══════════════════════════════════════════════════
+     HEADER + TAB BAR
+══════════════════════════════════════════════════ -->
+<div class="app-header">
+  <p class="app-header__title">🖨️ ระบบคำนวณราคาพิมพ์</p>
+  <p class="app-header__sub">เครื่องมือสำหรับทีมงาน — ข้อมูลต้นทุนและราคาขาย</p>
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="calc1" onclick="switchTab('calc1',this)">
+      <span class="tab-icon">🧮</span> คำนวณราคาวัสดุ
+    </button>
+    <button class="tab-btn" data-tab="calc2" onclick="switchTab('calc2',this)">
+      <span class="tab-icon">🔲</span> จำลองการจัดวางสติ๊กเกอร์
+    </button>
+    <button class="tab-btn" data-tab="calc3" onclick="switchTab('calc3',this)">
+      <span class="tab-icon">🏗️</span> คำนวณป้ายไฟ/Signage
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 1 — PRICE CALCULATOR
+══════════════════════════════════════════════════ -->
+<div id="tab-calc1" class="tab-content active">
+<div class="calc-wrap">
+
+  <div class="calc-panel" id="step-category">
+    <div class="calc-panel__title"><span class="calc-panel__num">1</span>หมวดวัสดุ</div>
+    <div class="calc-cats" id="catButtons"></div>
+  </div>
+
+  <div class="calc-panel calc-panel--hidden" id="step-item">
+    <div class="calc-panel__title"><span class="calc-panel__num">2</span>เลือกวัสดุ</div>
+    <select class="calc-select" id="itemSelect"><option value="">-- เลือกวัสดุ --</option></select>
+    <div class="calc-note calc-note--hidden" id="itemNote"></div>
+  </div>
+
+  <div class="calc-panel calc-panel--hidden" id="step-print">
+    <div class="calc-panel__title"><span class="calc-panel__num">3</span>วิธีพิมพ์</div>
+    <div id="print-normal">
+      <div class="g2">
+        <div>
+          <label class="calc-label">หมึกพิมพ์ <span class="req">*</span></label>
+          <select class="calc-select" id="inkSelect"><option value="">-- เลือกหมึก --</option></select>
+        </div>
+        <div>
+          <label class="calc-label" id="lamLabel">ฟิล์มเคลือบ</label>
+          <select class="calc-select" id="lamSelect"><option value="">-- ไม่เคลือบ --</option></select>
+        </div>
+      </div>
+    </div>
+    <div id="print-rigid" style="display:none">
+      <div class="g2" style="margin-bottom:16px">
+        <button class="calc-mode-btn calc-mode-btn--active" id="btn-uvfb" onclick="setRigidMode('uvfb')">🖨️ พิมพ์โดยตรง UV Flatbed</button>
+        <button class="calc-mode-btn" id="btn-mount" onclick="setRigidMode('mount')">🗂️ Mount Sticker ทับหน้า</button>
+      </div>
+      <div id="rigid-uvfb-opts">
+        <div class="calc-info-box" style="margin-bottom:12px" id="uvfb-info-text">✦ UV Flatbed — ทุนค่าพิมพ์ <strong>250 บาท/ตร.ม.</strong></div>
+        <div id="doublesided-row" style="display:none">
+          <label class="calc-toggle"><input type="checkbox" id="chk-doublesided"><span class="calc-toggle__track"></span>พิมพ์ 2 ด้าน <span style="font-size:11px;color:var(--muted2);margin-left:4px">(ค่าพิมพ์ × 2, วัสดุคิดครั้งเดียว)</span></label>
+        </div>
+      </div>
+      <div id="rigid-mount-opts" style="display:none">
+        <label class="calc-label">เกรดสติ๊กเกอร์ที่ Mount <span class="req">*</span></label>
+        <div class="mount-grade-grid">
+          <button class="mount-grade-btn" data-cost="200" onclick="setMountGrade(this)"><span class="mg-label">Value</span><span class="mg-cost">200 บ./ตร.ม.</span><span class="mg-desc">PP ธรรมดา</span></button>
+          <button class="mount-grade-btn" data-cost="350" onclick="setMountGrade(this)"><span class="mg-label">มาตรฐาน</span><span class="mg-cost">350 บ./ตร.ม.</span><span class="mg-desc">Inkjet คุณภาพดี</span></button>
+          <button class="mount-grade-btn" data-cost="600" onclick="setMountGrade(this)"><span class="mg-label">คุณภาพสูง</span><span class="mg-cost">600 บ./ตร.ม.</span><span class="mg-desc">3M / ฟิล์มพิเศษ</span></button>
+          <button class="mount-grade-btn" data-cost="1000" onclick="setMountGrade(this)"><span class="mg-label">สะท้อนแสง</span><span class="mg-cost">1,000 บ./ตร.ม.</span><span class="mg-desc">Reflective</span></button>
+          <button class="mount-grade-btn" data-cost="1800" onclick="setMountGrade(this)"><span class="mg-label">ไดมอนด์</span><span class="mg-cost">1,800 บ./ตร.ม.</span><span class="mg-desc">Diamond Grade</span></button>
+        </div>
+        <div id="doublesided-mount-row" style="display:none;margin-top:12px">
+          <label class="calc-toggle"><input type="checkbox" id="chk-doublesided-mount"><span class="calc-toggle__track"></span>Mount 2 ด้าน <span style="font-size:11px;color:var(--muted2);margin-left:4px">(ค่า mount × 2)</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="calc-panel calc-panel--hidden" id="step-qty">
+    <div class="calc-panel__title"><span class="calc-panel__num">4</span>ขนาด &amp; ปริมาณงาน</div>
+    <div style="margin-bottom:14px">
+      <label class="calc-label">หน่วยวัด</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="calc-mode-btn calc-mode-btn--active unit-btn" data-unit="m" onclick="setUnit(this)">เมตร (ม.)</button>
+        <button class="calc-mode-btn unit-btn" data-unit="cm" onclick="setUnit(this)">เซนติเมตร (ซม.)</button>
+        <button class="calc-mode-btn unit-btn" data-unit="in" onclick="setUnit(this)">นิ้ว (in)</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="calc-mode-btn calc-mode-btn--active" data-mode="sqm" onclick="setQtyMode(this)" style="flex:1;min-width:120px">📐 กว้าง × สูง</button>
+      <button class="calc-mode-btn" data-mode="piece" onclick="setQtyMode(this)" style="flex:1;min-width:120px">📦 จำนวนชิ้น × ขนาด</button>
+    </div>
+    <div id="mode-sqm">
+      <div class="g2">
+        <div><label class="calc-label" id="lbl-w">กว้าง (ม.)</label><input class="calc-input" type="number" id="inp-w" min="0" step="0.001" placeholder="0.000"></div>
+        <div><label class="calc-label" id="lbl-h">สูง (ม.)</label><input class="calc-input" type="number" id="inp-h" min="0" step="0.001" placeholder="0.000"></div>
+      </div>
+    </div>
+    <div id="mode-piece" style="display:none">
+      <div class="g3">
+        <div><label class="calc-label">จำนวน (ชิ้น)</label><input class="calc-input" type="number" id="inp-pcs" min="0" step="1" placeholder="0"></div>
+        <div><label class="calc-label" id="lbl-pw">กว้าง/ชิ้น (ม.)</label><input class="calc-input" type="number" id="inp-pw" min="0" step="0.001" placeholder="0.000"></div>
+        <div><label class="calc-label" id="lbl-ph">สูง/ชิ้น (ม.)</label><input class="calc-input" type="number" id="inp-ph" min="0" step="0.001" placeholder="0.000"></div>
+      </div>
+    </div>
+    <div id="gap-row" style="display:none;margin-top:12px">
+      <div class="g2">
+        <div><label class="calc-label">Gap ระหว่างชิ้น <span style="color:var(--muted2)">(มม.)</span></label><input class="calc-input" type="number" id="inp-gap" min="0" max="50" step="0.5" value="5"></div>
+        <div><label class="calc-label">Bleed ขอบวัสดุ <span style="color:var(--muted2)">(ซม.)</span></label><input class="calc-input" type="number" id="inp-bleed" min="0" max="20" step="0.1" value="2.5"></div>
+        <div id="sheet-info-box" style="display:none;grid-column:1/-1;margin-top:4px">
+          <label class="calc-label">ข้อมูลวัสดุ</label>
+          <div class="calc-info-box" id="sheet-info-text" style="padding:8px 12px;font-size:12px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="calc-area-display calc-area-display--hidden" id="areaDisplay"></div>
+    <div class="calc-note calc-note--hidden" id="minPieceNote" style="background:#fef3c7;border-color:#f59e0b;color:#78350f;margin-top:10px"></div>
+  </div>
+
+  <div class="calc-panel calc-panel--hidden" id="step-extra">
+    <div class="calc-panel__title"><span class="calc-panel__num">5</span>ค่าใช้จ่ายเพิ่มเติม &amp; ตัวเลือก</div>
+    <div class="g3">
+      <div><label class="calc-label">ค่า Setup / เตรียมไฟล์ (บาท)</label><input class="calc-input" type="number" id="inp-setup" min="0" placeholder="0"></div>
+      <div><label class="calc-label">ค่าออกแบบ (บาท)</label><input class="calc-input" type="number" id="inp-design" min="0" placeholder="0"></div>
+      <div><label class="calc-label">ค่าติดตั้ง / ส่ง (บาท)</label><input class="calc-input" type="number" id="inp-install" min="0" placeholder="0"></div>
+    </div>
+    <div class="calc-toggles">
+      <label class="calc-toggle"><input type="checkbox" id="chk-rush"><span class="calc-toggle__track"></span>งานด่วน +25%</label>
+      <label class="calc-toggle"><input type="checkbox" id="chk-vat"><span class="calc-toggle__track"></span>บวก VAT 7%</label>
+      <label class="calc-toggle"><input type="checkbox" id="chk-override"><span class="calc-toggle__track"></span>กำหนด Cost Ratio เอง</label>
+    </div>
+    <div class="calc-override calc-override--hidden" id="overrideBox">
+      <label class="calc-label">Cost Ratio (ต้นทุนเป็นสัดส่วนของราคาขาย)</label>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px">
+        <input class="calc-input" type="number" id="inp-ratio" min="0.01" max="0.99" step="0.01" placeholder="0.50" style="max-width:100px">
+        <span style="font-size:12px;color:var(--muted)">ราคาขาย = ทุน ÷ ratio &nbsp;|&nbsp; เช่น 0.45 = ทุนคิดเป็น 45% ของราคาขาย</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="calc-panel calc-panel--hidden" id="tier-panel">
+    <div class="calc-panel__title"><span class="calc-panel__num">★</span>ตาราง Cost Ratio — <span id="tier-cat-label" style="font-weight:800;letter-spacing:0"></span></div>
+    <div class="tier-table-wrap">
+      <table class="tier-table">
+        <thead><tr><th>Tier</th><th>ทุนรวม</th><th>Cost Ratio</th><th>ราคาขาย</th><th>หมายเหตุ</th></tr></thead>
+        <tbody id="tierBody"></tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--muted2);margin-top:8px">ratio ยิ่งต่ำ = บวกมากขึ้น | แต่ละหมวดมีตาราง tier แยกตามการแข่งขันของตลาด</div>
+  </div>
+
+  <div class="waste-panel" id="wastePanel" style="display:none">
+    <div class="waste-panel__title">📊 การคำนวณพื้นที่จริง &amp; Waste<button class="waste-toggle" id="wasteToggle" onclick="toggleWaste()">ซ่อน ▲</button></div>
+    <div id="wasteSteps"></div>
+  </div>
+
+  <div class="layout-panel" id="layoutPanel" style="display:none">
+    <div class="layout-panel__title">🔲 จำลองการจัดวางบนแผ่น<button class="waste-toggle" id="layoutToggle" onclick="toggleLayout()">ซ่อน ▲</button></div>
+    <div id="layoutCanvasWrap">
+      <canvas id="layoutCanvas" style="width:100%;height:auto;border-radius:8px;display:block"></canvas>
+      <div id="layoutLegend" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)"></div>
+    </div>
+  </div>
+
+  <div class="calc-result calc-result--hidden" id="resultPanel">
+    <div class="calc-panel__title"><span class="calc-panel__num">✓</span>สรุปราคา</div>
+    <div class="result-rows" id="resultRows"></div>
+    <div class="result-final" id="resultFinal"></div>
+  </div>
+
+</div>
+</div><!-- /tab-calc1 -->
+
+<!-- ══════════════════════════════════════════════════
+     TAB 2 — STICKER LAYOUT CALCULATOR
+══════════════════════════════════════════════════ -->
+<div id="tab-calc2" class="tab-content">
+<div class="calc-wrap">
+
+  <!-- Row 1: Form + Preview side by side -->
+  <div class="sc-grid">
+
+    <!-- Form -->
+    <div>
+      <div class="calc-panel">
+        <div class="calc-panel__title"><span class="calc-panel__num">1</span>กำหนดขนาดวัสดุ</div>
+        <div style="margin-bottom:14px">
+          <label class="calc-label">ขนาดวัสดุสำเร็จรูป</label>
+          <select class="calc-select" id="sc-paper-size">
+            <option value="custom">กำหนดเอง</option>
+            <option value="a5">A5 (14.8 × 21 ซม.)</option>
+            <option value="a4">A4 (21 × 29.7 ซม.)</option>
+            <option value="a3" selected>A3 (29.7 × 42 ซม.)</option>
+            <option value="a3plus">A3+ (33 × 48.3 ซม.)</option>
+          </select>
+        </div>
+        <div class="g2">
+          <div><label class="calc-label">ความกว้างวัสดุ (ซม.)</label><input type="number" step="0.01" min="0" class="calc-input" id="sc-paper-w" value="29.7"></div>
+          <div><label class="calc-label">ความสูงวัสดุ (ซม.)</label><input type="number" step="0.01" min="0" class="calc-input" id="sc-paper-h" value="42"></div>
+        </div>
+      </div>
+
+      <div class="calc-panel">
+        <div class="calc-panel__title"><span class="calc-panel__num">2</span>ขนาดชิ้นงาน</div>
+        <div class="g2">
+          <div><label class="calc-label">ความกว้างชิ้นงาน (ซม.)</label><input type="number" step="0.01" min="0" class="calc-input" id="sc-sticker-w" value="5"></div>
+          <div><label class="calc-label">ความสูงชิ้นงาน (ซม.)</label><input type="number" step="0.01" min="0" class="calc-input" id="sc-sticker-h" value="5"></div>
+        </div>
+        <div class="g2" style="margin-top:12px">
+          <div><label class="calc-label">Gap ระหว่างชิ้น (ซม.)</label><input type="number" step="0.01" min="0" class="calc-input" id="sc-spacing" value="0.5"></div>
+          <div><label class="calc-label">Bleed รอบขอบแผ่น (ซม.)</label><input type="number" step="0.01" min="0" class="calc-input" id="sc-bleed" value="2.54"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Canvas -->
+    <div class="calc-panel" style="display:flex;flex-direction:column">
+      <div class="calc-panel__title"><span class="calc-panel__num">👁</span>ตัวอย่างการจัดเรียง</div>
+      <div class="sc-canvas-wrap" style="flex:1">
+        <canvas class="sc-canvas" id="sc-canvas" width="500" height="440"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Results Summary -->
+  <div class="calc-panel">
+    <div class="calc-panel__title"><span class="calc-panel__num">★</span>ผลการจัดเรียง</div>
+    <div class="g3">
+      <div style="text-align:center;padding:10px;background:#f8fafc;border-radius:10px">
+        <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">ชิ้น/แผ่น</div>
+        <div style="font-size:36px;font-weight:800;color:var(--accent)" id="sc-count-per-sheet">0</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:#f8fafc;border-radius:10px">
+        <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">พื้นที่แผ่น (ตร.ม.)</div>
+        <div style="font-size:24px;font-weight:800;color:var(--text)" id="sc-sheet-area">0.0000</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:#f8fafc;border-radius:10px">
+        <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">ประสิทธิภาพ</div>
+        <div style="font-size:24px;font-weight:800;color:#16a34a" id="sc-efficiency">0%</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(79,70,229,.05);border-radius:9px;font-size:13px;color:#334155">
+      <strong>โหมดที่ดีที่สุด:</strong> <span id="sc-optimal-layout">—</span>
+    </div>
+  </div>
+
+  <!-- Row 3: Pricing -->
+  <div class="sc-result-grid">
+
+    <!-- Input Card -->
+    <div class="sc-card">
+      <div class="sc-card-title">
+        <span class="calc-panel__num">3</span>
+        กรอกราคาเพื่อคำนวณ
+        <span class="sc-mode-badge">PRO</span>
+      </div>
+
+      <!-- Mode -->
+      <div style="margin-bottom:14px">
+        <label class="calc-label">โหมดคำนวณ</label>
+        <div class="sc-radio-group">
+          <label class="sc-radio-label"><input type="radio" name="sc-mode" value="perSticker" checked> ต่อดวง</label>
+          <label class="sc-radio-label"><input type="radio" name="sc-mode" value="perSheet"> ต่อแผ่น</label>
+          <label class="sc-radio-label"><input type="radio" name="sc-mode" value="perSqm"> ต่อ ตร.ม.</label>
+        </div>
+      </div>
+
+      <!-- Quantity -->
+      <div class="g2" style="margin-bottom:12px">
+        <div><label class="calc-label">จำนวนชิ้นที่ต้องการ</label><input type="number" min="0" step="1" class="calc-input" id="sc-desired-qty" value="100"></div>
+        <div><label class="calc-label">จำนวนแผ่นที่ต้องการ</label><input type="number" min="0" step="1" class="calc-input" id="sc-desired-sheets" value="0"></div>
+      </div>
+
+      <!-- Unit prices -->
+      <div class="g2" style="margin-bottom:12px">
+        <div><label class="calc-label">ราคาต่อชิ้น (บาท)</label><input type="number" min="0" step="0.01" class="calc-input" id="sc-price-per-sticker" value="0"></div>
+        <div><label class="calc-label">ราคาต่อแผ่น (บาท)</label><input type="number" min="0" step="0.01" class="calc-input" id="sc-price-per-sheet" value="0"></div>
+      </div>
+      <div class="g2" style="margin-bottom:12px">
+        <div><label class="calc-label">ราคาต่อ ตร.ม. (บาท)</label><input type="number" min="0" step="0.01" class="calc-input" id="sc-price-per-sqm" value="0"></div>
+        <div><label class="calc-label">ราคาเคลือบต่อ ตร.ม. (บาท)</label><input type="number" min="0" step="0.01" class="calc-input" id="sc-laminate-per-sqm" value="0"></div>
+      </div>
+
+      <hr class="sc-divider">
+
+      <!-- Extra costs -->
+      <div class="g2" style="margin-bottom:12px">
+        <div><label class="calc-label">ค่าไดคัท/ชิ้น (บาท)</label><input type="number" min="0" step="0.01" class="calc-input" id="sc-diecut" value="0"></div>
+        <div><label class="calc-label">ค่าเซ็ตอัป/บล็อก (บาท)</label><input type="number" min="0" step="0.01" class="calc-input" id="sc-setup" value="0"></div>
+      </div>
+      <div class="g2" style="margin-bottom:12px">
+        <div><label class="calc-label">อัตราสูญเสีย Waste (%)</label><input type="number" min="0" step="1" class="calc-input" id="sc-waste" value="0"></div>
+        <div>
+          <label class="calc-label">คิดพื้นที่จาก</label>
+          <select class="calc-select" id="sc-area-basis">
+            <option value="usable">พื้นที่ใช้งาน (หักขอบ bleed)</option>
+            <option value="full">พื้นที่ทั้งแผ่น</option>
+          </select>
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:12px">
+        <div><label class="calc-label">VAT (%)</label><input type="number" min="0" step="0.01" class="calc-input" id="sc-vat-pct" value="7"></div>
+        <div>
+          <label class="calc-label">VAT ในราคา</label>
+          <select class="calc-select" id="sc-vat-included">
+            <option value="false">ไม่รวม VAT</option>
+            <option value="true">รวม VAT แล้ว</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="calc-label">ปัดเศษยอดรวม</label>
+        <select class="calc-select" id="sc-round">
+          <option value="none">ไม่ปัด</option>
+          <option value="100">ปัดขึ้นทุก 100</option>
+          <option value="500">ปัดขึ้นทุก 500</option>
+          <option value="1000">ปัดขึ้นทุก 1,000</option>
+          <option value="5000">ปัดขึ้นทุก 5,000</option>
+        </select>
+      </div>
+      <div class="sc-note">💡 กรอกทั้ง "ชิ้น" และ "แผ่น" ระบบจะคำนวณให้ทั้งสองแบบเพื่อเทียบกัน</div>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="sc-card">
+      <div class="sc-card-title"><span class="calc-panel__num">✓</span>สรุปคำนวณ</div>
+
+      <div class="sc-result-row">
+        <span class="sc-result-label">ชิ้นงานต่อแผ่น (จากเลย์เอาต์)</span>
+        <span class="sc-result-value big" id="sc-sum-cps">0</span>
+      </div>
+      <div class="sc-result-row">
+        <span class="sc-result-label">แผ่นที่ใช้ (คำนวณจากจำนวนชิ้น)</span>
+        <span class="sc-result-value" id="sc-sheets-for-qty">0</span>
+      </div>
+      <div class="sc-result-row">
+        <span class="sc-result-label">ชิ้นที่ได้ (คำนวณจากจำนวนแผ่น)</span>
+        <span class="sc-result-value" id="sc-stickers-from-sheets">0</span>
+      </div>
+      <div class="sc-result-row">
+        <span class="sc-result-label">พื้นที่ที่ใช้คิดราคา (ตร.ม.)</span>
+        <span class="sc-result-value" id="sc-area-used">—</span>
+      </div>
+
+      <hr class="sc-divider">
+
+      <div class="sc-result-row">
+        <span class="sc-result-label">ยอดรวม (ก่อน VAT)</span>
+        <span class="sc-result-value" id="sc-subtotal">฿0.00</span>
+      </div>
+      <div class="sc-result-row">
+        <span class="sc-result-label">VAT</span>
+        <span class="sc-result-value" id="sc-vat-amount">฿0.00</span>
+      </div>
+
+      <hr class="sc-divider">
+
+      <div class="sc-result-row">
+        <span class="sc-result-label">ราคาต่อชิ้น (Effective)</span>
+        <span class="sc-result-value" id="sc-eff-per-sticker">฿0.00</span>
+      </div>
+      <div class="sc-result-row">
+        <span class="sc-result-label">ราคาต่อ ตร.ม./แผ่น (Effective)</span>
+        <span class="sc-result-value" id="sc-eff-per-sqm-layout">฿0.00</span>
+      </div>
+      <div class="sc-result-row">
+        <span class="sc-result-label">ราคาต่อ ตร.ม. (Effective รวม)</span>
+        <span class="sc-result-value" id="sc-eff-per-sqm">฿0.00</span>
+      </div>
+
+      <div class="sc-grand" id="sc-grand-box">
+        <div>
+          <div class="sc-grand__label">ยอดรวมสุทธิ</div>
+          <div class="sc-grand__value" id="sc-grand">฿<span>0.00</span></div>
+          <div class="sc-grand__sub" id="sc-round-note"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-calc2 -->
+<!-- ══════════════════════════════════════════════════
+     TAB 3 — SIGNAGE PRICE CALCULATOR
+══════════════════════════════════════════════════ -->
+<div id="tab-calc3" class="tab-content">
+<div class="calc-wrap">
+<style>
+.sg-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:12px}
+.sg-grid{display:grid;gap:14px;margin-top:8px}
+@media(min-width:751px){.sg-grid{grid-template-columns:1fr 1fr}}
+.sg-opts{grid-column:1/-1;background:#f9fafb;border:1px solid var(--border);border-radius:12px;padding:14px}
+.sg-opt-title{margin:0 0 10px;font-weight:800;font-size:13px;color:var(--accent)}
+.sg-opt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media(max-width:900px){.sg-opt-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.sg-opt-grid{grid-template-columns:1fr}}
+.sg-check{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.sg-check input{width:16px;height:16px;accent-color:var(--accent)}
+.sg-fx-wrap{border:1px dashed var(--border);border-radius:12px;margin-bottom:12px}
+.sg-fx-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#f9fafb;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px}
+.sg-fx-body{display:none;padding:14px 16px}
+.sg-fx-grid{display:grid;gap:12px}
+@media(min-width:751px){.sg-fx-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.sg-results{background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:16px}
+.sg-results-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sg-toggle-all{padding:6px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit}
+.sg-rows details{border-bottom:1px dotted var(--border);padding:8px 0}
+.sg-rows details:last-child{border-bottom:none}
+.sg-summary{display:grid;grid-template-columns:1fr 140px 140px;gap:8px;align-items:center;cursor:pointer;list-style:none}
+.sg-summary::-webkit-details-marker{display:none}
+.sg-sum-left{display:flex;gap:8px;align-items:center;font-size:13px}
+.sg-pill{font-size:11px;border:1px solid #e5e5e5;border-radius:999px;padding:1px 8px;background:#fff;color:#666}
+.sg-amt-r{font-weight:800;color:#059669;text-align:right;font-size:13px}
+.sg-amt-p{font-weight:800;color:#7c3aed;text-align:right;font-size:13px}
+.sg-detail-box{padding:8px 0 4px;color:#374151;font-size:12px}
+.sg-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.sg-compare{grid-template-columns:1fr}}
+.sg-col{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px}
+.sg-col h5{margin:0 0 6px;font-size:12px;color:#555}
+.sg-detail-box ul{margin:4px 0;padding-left:16px}
+.sg-totals{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media(max-width:750px){.sg-totals{grid-template-columns:1fr}}
+.sg-final{border-radius:14px;text-align:center;padding:18px;color:#fff}
+.sg-final.real{background:linear-gradient(135deg,#065f46,#10b981)}
+.sg-final.pos{background:linear-gradient(135deg,#4c1d95,#7c3aed)}
+.sg-final .lbl{font-size:12px;opacity:.8;margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase}
+.sg-final .amt{font-size:38px;font-weight:900;letter-spacing:-1px;line-height:1}
+.sg-final .pre{font-size:12px;opacity:.65;margin-top:4px}
+.sg-badges{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 2px}
+.sg-badge{font-size:11px;border:1px solid #dcdcdc;border-radius:999px;padding:1px 8px;background:#fff;color:#555}
+.sg-badge.ok{border-color:#10b981;color:#065f46;background:#ecfdf5}
+.sg-power-note{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+.sg-warn{display:none;margin-top:10px;background:#fff4e5;color:#663c00;padding:10px 14px;border-radius:10px;font-size:13px}
+</style>
+
+  <div class="calc-panel">
+    <div class="calc-panel__title"><span class="calc-panel__num">🏗</span>คำนวณต้นทุนป้ายไฟ / Signage</div>
+
+    <form id="sg-form">
+      <div class="sg-grid">
+
+        <div><label class="calc-label">ประเภทงาน</label>
+          <select id="sg-preset" class="calc-select">
+            <option value="metal_in">อักษรโลหะ (Indoor)</option>
+            <option value="metal_out">อักษรโลหะ (Outdoor)</option>
+            <option value="channel_in">Channel Letter (Indoor)</option>
+            <option value="channel_out">Channel Letter (Outdoor)</option>
+            <option value="lb_in">Lightbox (Indoor)</option>
+            <option value="lb_out">Lightbox (Outdoor)</option>
+          </select>
+        </div>
+
+        <div><label class="calc-label">ต้นทุนอักษร/กรอบโลหะ (บาท)</label>
+          <input id="sg-metalCost" type="number" min="0" step="1" class="calc-input" placeholder="เช่น 3500"></div>
+
+        <div><label class="calc-label">กว้าง (ซม.)</label><input id="sg-w" type="number" min="0" step="0.1" class="calc-input"></div>
+        <div><label class="calc-label">สูง (ซม.)</label><input id="sg-h" type="number" min="0" step="0.1" class="calc-input"></div>
+        <div><label class="calc-label">กำไรหลัก (%)</label><input id="sg-margin" type="number" min="0" max="90" step="1" value="40" class="calc-input"></div>
+        <div><label class="calc-label">ค่าติดตั้งขั้นต่ำ (บาท)</label><input id="sg-install_base" type="number" min="0" step="100" value="5000" class="calc-input"></div>
+        <div><label class="calc-label">ความสูงติดตั้ง (เมตร)</label><input id="sg-height_m" type="number" min="0" step="0.1" value="0" class="calc-input"></div>
+        <div><label class="calc-label">ค่าความยาก (%)</label><input id="sg-difficulty_pct" type="number" min="0" max="200" step="1" value="0" class="calc-input"></div>
+
+        <!-- Options -->
+        <div class="sg-opts">
+          <p class="sg-opt-title">ตัวเลือกเพิ่มเติม</p>
+          <div class="sg-opt-grid">
+            <label class="sg-check"><input type="checkbox" id="sg-hasPaint"> มีงานพ่นสี</label>
+            <label class="sg-check"><input type="checkbox" id="sg-hasSticker"> มีสติ๊กเกอร์</label>
+            <label class="sg-check"><input type="checkbox" id="sg-hasAcrylic"> มีชั้นอะคริลิก</label>
+            <label class="sg-check"><input type="checkbox" id="sg-hasVinyl"> มีชั้นไวนิล</label>
+            <label class="sg-check"><input type="checkbox" id="sg-useCrane"> ใช้เครน (+10,000)</label>
+            <label class="sg-check"><input type="checkbox" id="sg-hasSteel"> โครงเหล็กรับหลัง</label>
+            <label class="sg-check"><input type="checkbox" id="sg-hasComp"> พื้นหลังคอมโพสิต</label>
+          </div>
+        </div>
+
+        <div><label class="calc-label">จำนวนสีพ่น</label><input id="sg-paint_colors" type="number" min="1" max="10" step="1" value="1" class="calc-input"></div>
+        <div><label class="calc-label">โครงเหล็ก: กว้าง (ซม.)</label><input id="sg-steel_w" type="number" step="0.1" class="calc-input" placeholder="ว่างไว้ = ใช้ขนาดงานหลัก"></div>
+        <div><label class="calc-label">โครงเหล็ก: สูง (ซม.)</label><input id="sg-steel_h" type="number" step="0.1" class="calc-input" placeholder="ว่างไว้ = ใช้ขนาดงานหลัก"></div>
+        <div><label class="calc-label">คอมโพสิต: กว้าง (ซม.)</label><input id="sg-comp_w" type="number" step="0.1" class="calc-input"></div>
+        <div><label class="calc-label">คอมโพสิต: สูง (ซม.)</label><input id="sg-comp_h" type="number" step="0.1" class="calc-input"></div>
+
+      </div>
+
+      <!-- Factors collapsible -->
+      <div class="sg-fx-wrap">
+        <div class="sg-fx-head" id="sg-fx-toggle"><strong>⚙️ Factors (ปรับได้)</strong><span id="sg-fx-caret">▾</span></div>
+        <div class="sg-fx-body" id="sg-fx-body">
+          <div class="sg-fx-grid">
+            <div><label class="calc-label">ต้นทุนโลหะ/ตร.ม. (อนุมานพื้นที่)</label><input id="sg-metal_unit_cost" type="number" step="100" value="12000" class="calc-input"></div>
+            <div><label class="calc-label">พ่นสีฐานงาน Indoor</label><input id="sg-paint_job_in" type="number" step="100" value="2000" class="calc-input"></div>
+            <div><label class="calc-label">พ่นสีฐานงาน Outdoor/2K</label><input id="sg-paint_job_out" type="number" step="100" value="2500" class="calc-input"></div>
+            <div><label class="calc-label">พ่นสีเพิ่ม/ตร.ม. Indoor</label><input id="sg-paint_area_in" type="number" step="10" value="300" class="calc-input"></div>
+            <div><label class="calc-label">พ่นสีเพิ่ม/ตร.ม. Outdoor</label><input id="sg-paint_area_out" type="number" step="10" value="600" class="calc-input"></div>
+            <div><label class="calc-label">ตัวคูณต่อสีเพิ่ม (%)</label><input id="sg-paint_color_extra" type="number" step="1" value="50" class="calc-input"></div>
+            <div><label class="calc-label">ตัวคูณขนาดงาน (พ่นสี)</label><input id="sg-paint_size_mults" type="text" value="1.00,1.05,1.10,1.18,1.25" class="calc-input"></div>
+            <div><label class="calc-label">Sticker บาท/ตร.ม.</label><input id="sg-sticker_sqm" type="number" step="10" value="1000" class="calc-input"></div>
+            <div><label class="calc-label">Sticker: min area (ตร.ม.)</label><input id="sg-sticker_min_area" type="number" step="0.01" value="0.25" class="calc-input"></div>
+            <div><label class="calc-label">Sticker: min baht</label><input id="sg-sticker_min_baht" type="number" step="10" value="400" class="calc-input"></div>
+            <div><label class="calc-label">Sticker: micro threshold</label><input id="sg-sticker_micro_th" type="number" step="0.01" value="0.25" class="calc-input"></div>
+            <div><label class="calc-label">Sticker: micro rate</label><input id="sg-sticker_micro_rate" type="number" step="50" value="1500" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic LB บาท/ตร.ม.</label><input id="sg-acrylic_lb_sqm" type="number" step="10" value="2000" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic LB: min area</label><input id="sg-acrylic_lb_min_area" type="number" step="0.01" value="0.25" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic LB: min baht</label><input id="sg-acrylic_lb_min_baht" type="number" step="10" value="300" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic LB: micro threshold</label><input id="sg-acrylic_lb_micro_th" type="number" step="0.01" value="0.25" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic LB: micro rate</label><input id="sg-acrylic_lb_micro_rate" type="number" step="50" value="500" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic CH บาท/ตร.ม.</label><input id="sg-acrylic_ch_sqm" type="number" step="10" value="2000" class="calc-input"></div>
+            <div><label class="calc-label">สัดส่วนพื้นที่ไฟ (0.1–1.0)</label><input id="sg-ch_eff" type="number" step="0.1" value="0.5" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic CH: min area</label><input id="sg-acrylic_ch_min_area" type="number" step="0.01" value="0.25" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic CH: min baht</label><input id="sg-acrylic_ch_min_baht" type="number" step="10" value="300" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic CH: micro threshold</label><input id="sg-acrylic_ch_micro_th" type="number" step="0.01" value="0.25" class="calc-input"></div>
+            <div><label class="calc-label">Acrylic CH: micro rate</label><input id="sg-acrylic_ch_micro_rate" type="number" step="50" value="500" class="calc-input"></div>
+            <div><label class="calc-label">Vinyl บาท/ตร.ม.</label><input id="sg-vinyl_sqm" type="number" step="10" value="500" class="calc-input"></div>
+            <div><label class="calc-label">Vinyl: min area</label><input id="sg-vinyl_min_area" type="number" step="0.01" value="0.25" class="calc-input"></div>
+            <div><label class="calc-label">Vinyl: min baht</label><input id="sg-vinyl_min_baht" type="number" step="10" value="400" class="calc-input"></div>
+            <div><label class="calc-label">Vinyl: micro threshold</label><input id="sg-vinyl_micro_th" type="number" step="0.01" value="0.25" class="calc-input"></div>
+            <div><label class="calc-label">Vinyl: micro rate</label><input id="sg-vinyl_micro_rate" type="number" step="50" value="600" class="calc-input"></div>
+            <div><label class="calc-label">กว้างม้วนใช้งาน (ซม.)</label><input id="sg-roll_width_cm" type="number" step="1" value="126" class="calc-input"></div>
+            <div><label class="calc-label">เผื่อขอบสองด้าน (ซม.)</label><input id="sg-edge_margin_cm" type="number" step="1" value="2" class="calc-input"></div>
+            <div><label class="calc-label">ซ้อนทับแนวต่อแผ่น (ซม.)</label><input id="sg-panel_overlap_cm" type="number" step="0.5" value="1" class="calc-input"></div>
+            <div><label class="calc-label">โครงเหล็ก: เรต (ใหญ่/เบิ้ม/มหึมา)</label><input id="sg-steel_rates" type="text" value="2000,1500,1200" class="calc-input"></div>
+            <div><label class="calc-label">คอมโพสิต บาท/ตร.ม.</label><input id="sg-comp_sqm" type="number" step="10" value="3500" class="calc-input"></div>
+            <div>
+              <label class="calc-label">Lightbox: W/ตร.ม. (Min / Max)</label>
+              <div style="display:flex;gap:8px">
+                <input id="sg-lb_w_min" type="number" step="1" value="160" class="calc-input">
+                <input id="sg-lb_w_max" type="number" step="1" value="180" class="calc-input">
+              </div>
+            </div>
+            <div>
+              <label class="calc-label">Channel: W/ตร.ม. (Min / Max)</label>
+              <div style="display:flex;gap:8px">
+                <input id="sg-ch_w_min" type="number" step="1" value="250" class="calc-input">
+                <input id="sg-ch_w_max" type="number" step="1" value="300" class="calc-input">
+              </div>
+            </div>
+            <div><label class="calc-label">PSU Watt/ตัว</label><input id="sg-psu_watt" type="number" step="10" value="350" class="calc-input"></div>
+            <div><label class="calc-label">PSU ราคา Indoor</label><input id="sg-psu_in" type="number" step="10" value="500" class="calc-input"></div>
+            <div><label class="calc-label">PSU ราคา Outdoor</label><input id="sg-psu_out" type="number" step="10" value="1500" class="calc-input"></div>
+            <div><label class="calc-label">ติดตั้ง: เพิ่มตามพื้นที่ (บ./ตร.ม.)</label><input id="sg-install_per_sqm" type="number" step="10" value="700" class="calc-input"></div>
+            <div><label class="calc-label">ตัวคูณความสูง (≤3/≤6/≤10/>10m)</label><input id="sg-height_mults" type="text" value="1.0,1.2,1.4,1.8" class="calc-input"></div>
+            <div><label class="calc-label">เกณฑ์แบ่งขนาด (ตร.ม.) [4 ค่า upper]</label><input id="sg-size_breaks" type="text" value="0.5,1,3,8" class="calc-input"></div>
+            <div><label class="calc-label">ตัวคูณขนาดงาน (5 ระดับ)</label><input id="sg-size_mults" type="text" value="0.95,1.15,1.30,1.45,1.80" class="calc-input"></div>
+            <div><label class="calc-label">น้ำหนักตัวคูณขนาดงาน (k)</label><input id="sg-size_weight" type="number" step="0.1" value="1.5" class="calc-input"></div>
+            <div><label class="calc-label">ปัดราคาสุดท้าย</label>
+              <select id="sg-final_round_step" class="calc-select">
+                <option value="0">ไม่ปัด</option>
+                <option value="100" selected>Realistic ลง/Positive ขึ้น ทุก 100</option>
+                <option value="500">Realistic ลง/Positive ขึ้น ทุก 500</option>
+                <option value="1000">Realistic ลง/Positive ขึ้น ทุก 1000</option>
+              </select>
+            </div>
+            <div><label class="calc-label">Realistic factors % (9 ค่า)</label><input id="sg-mf_real_all" type="text" value="100,100,100,100,100,100,100,100,100" class="calc-input"></div>
+            <div><label class="calc-label">Positive factors % (9 ค่า)</label><input id="sg-mf_pos_all" type="text" value="100,102,103,103,103,102,102,102,102" class="calc-input"></div>
+            <div><label class="calc-label">Positive size uplift % (5 ระดับ)</label><input id="sg-pos_size_uplifts" type="text" value="0,2,5,10,15" class="calc-input"></div>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Results -->
+    <div class="sg-results">
+      <div class="sg-results-head">
+        <strong style="font-size:13px;color:var(--text)">รายละเอียดการคำนวณ</strong>
+        <button type="button" class="sg-toggle-all" id="sg-toggle-all">แสดงเบื้องหลังทั้งหมด</button>
+      </div>
+      <div id="sg-rows" class="sg-rows"></div>
+
+      <div class="sg-totals">
+        <div class="sg-final real">
+          <div class="lbl">รวม Realistic</div>
+          <div class="amt" id="sg-total-real">฿0</div>
+          <div class="pre" id="sg-total-real-raw">ก่อนปัด: ฿0</div>
+          <div style="font-size:11px;opacity:.6;margin-top:4px">ปัด "ลง" ตามขั้นที่เลือก</div>
+        </div>
+        <div class="sg-final pos">
+          <div class="lbl">รวม Positive</div>
+          <div class="amt" id="sg-total-pos">฿0</div>
+          <div class="pre" id="sg-total-pos-raw">ก่อนปัด: ฿0</div>
+          <div style="font-size:11px;opacity:.6;margin-top:4px">คูณ factors + uplift → ปัด "ขึ้น"</div>
+        </div>
+      </div>
+
+      <div class="sg-power-note" id="sg-power-note">Power Usage: 0 W</div>
+      <div class="sg-warn" id="sg-warn"></div>
+    </div>
+
+  </div>
+</div>
+</div><!-- /tab-calc3 -->
+
+
+<!-- ══════════════════════════════════════════════════
+     TAB SWITCHER JS
+══════════════════════════════════════════════════ -->
+<script>
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  // Redraw sticker canvas on tab switch
+  if(id==='calc2'&&window.scCalc) window.scCalc.calculate();
+}
+</script>
+
+<!-- ══════════════════════════════════════════════════
+     CALCULATOR 1 SCRIPT (Price Calculator)
+══════════════════════════════════════════════════ -->
+<script>
+(function(){
+var STAFF=true;
+
+var ITEMS=[
+  {name:"ไวนิลมาตรฐาน (Frontlit 450 GSM)",cat:"ไวนิล",mat:27,inks:["Solvent","Epson"],lams:[],roll_w:3.20},
+  {name:"ไวนิลดูร่า (Dura UV 510 GSM)",cat:"ไวนิล",mat:52,inks:["Solvent","Epson","Canon","Latex","UV Mimaki"],lams:[],roll_w:1.60},
+  {name:"ไวนิลหลังดำ (Frontlit 280 GSM)",cat:"ไวนิล",mat:27,inks:["Solvent","Epson"],lams:[],roll_w:3.20},
+  {name:"ไวนิลโปร่งแสง (HEYTEX)",cat:"ไวนิล",mat:56,inks:["UV Mimaki","Latex"],lams:[],roll_w:1.52},
+  {name:"ไวนิล ตาข่าย (MESH 305 GSM)",cat:"ไวนิล",mat:65,inks:["Solvent","Epson"],lams:[],roll_w:3.20},
+  {name:"PVC STICKER (หลังขาว-ประหยัด)",cat:"สติ๊กเกอร์",mat:27,roll_w:1.30,inks:["Epson","Canon","Latex"],lams:["SUJET เงาผิวเรียบ"]},
+  {name:"3M IJ1220 (หลังเทา-มาตรฐาน)",cat:"สติ๊กเกอร์",mat:90,roll_w:1.22,inks:["Epson","Canon","Latex"],lams:["3M 4156 เคลือบเงา","3M 4157 เคลือบด้าน"]},
+  {name:"3M IJ16 (หลังเทา)",cat:"สติ๊กเกอร์",mat:66,roll_w:1.37,inks:["Epson","Canon","Latex"],lams:["3M 4156 เคลือบเงา","3M 4157 เคลือบด้าน"]},
+  {name:"3M IJ15 (กาวใส)",cat:"สติ๊กเกอร์",mat:55,roll_w:1.37,inks:["Epson","Canon","Latex"],lams:["3M 4156 เคลือบเงา","3M 4157 เคลือบด้าน"]},
+  {name:"3M IJ35/IJ40 (กาวตาราง-คุณภาพดี)",cat:"สติ๊กเกอร์",mat:198,roll_w:1.37,inks:["Epson","Canon","Latex"],lams:["3M 8520 เคลือบด้าน","3M 4156 เคลือบเงา","3M 4157 เคลือบด้าน","3M FILM IJ40-114"]},
+  {name:'3M IJ180 (ฟิล์มหล่อ-คุณภาพสูงสุด)',cat:"สติ๊กเกอร์",mat:350,roll_w:1.37,inks:["Epson","Canon","Latex"],lams:["3M 8520 เคลือบด้าน","3M 4156 เคลือบเงา","3M 4157 เคลือบด้าน","3M FILM IJ40-114"]},
+  {name:"3M IJ1227 (Backlit โปร่งแสง)",cat:"สติ๊กเกอร์",mat:139,roll_w:1.37,inks:["Epson","Canon","Latex","UV Mimaki"],lams:["3M 4156 เคลือบเงา","3M 4157 เคลือบด้าน"]},
+  {name:"3M IJ610 (สะท้อนแสง-มาตรฐาน)",cat:"สติ๊กเกอร์",mat:359,roll_w:1.22,inks:["Canon","UV Mimaki"],lams:[],note:"ผิวสะท้อนแสง ห้ามเคลือบ"},
+  {name:"ซีทรู Clear Vision",cat:"สติ๊กเกอร์",mat:71,roll_w:1.37,inks:["Canon"],lams:[]},
+  {name:"ใส Super clear",cat:"สติ๊กเกอร์",mat:93,roll_w:1.30,inks:["Epson","Canon","Latex","UV Mimaki"],lams:["SUJET เงาผิวเรียบ","FloorGuard"]},
+  {name:"สุญญากาศใส Vacuum",cat:"สติ๊กเกอร์",mat:79,roll_w:1.37,inks:["Epson","Canon","Latex","UV Mimaki"],lams:["SUJET เงาผิวเรียบ"]},
+  {name:"ฟู่ซุ่น PET เงินด้าน",cat:"สติ๊กเกอร์",mat:86,roll_w:1.22,inks:["Canon"],lams:[],note:"ผิวเงินพิเศษ ห้ามเคลือบ"},
+  {name:"ฟู่ซุ่น PET เงินเงา",cat:"สติ๊กเกอร์",mat:74,roll_w:1.22,inks:["Canon"],lams:[],note:"ผิวเงินพิเศษ ห้ามเคลือบ"},
+  {name:"ฟู่ซุ่น ทองเงา 862",cat:"สติ๊กเกอร์",mat:62,roll_w:1.22,inks:["Canon"],lams:[],note:"ผิวทองพิเศษ ห้ามเคลือบ"},
+  {name:"KODAK ฟอยล์ทองเงา",cat:"สติ๊กเกอร์",mat:70,roll_w:0.61,inks:["Canon","UV Mimaki"],lams:[],note:"ฟอยล์ ห้ามเคลือบ"},
+  {name:"PET ผิวด้าน POP หลังเทา 120 แกรม",cat:"สติ๊กเกอร์",mat:87,roll_w:1.22,inks:["Canon"],lams:[]},
+  {name:"สติ๊กเกอร์ฝ้า มุกฟู่ซุ่น",cat:"สติ๊กเกอร์",mat:91,roll_w:1.22,inks:["Epson","Canon","Latex","UV Mimaki"],lams:["SUJET เงาผิวเรียบ"]},
+  {name:"โฮโลแกรม",cat:"สติ๊กเกอร์",mat:85,roll_w:1.10,inks:["Epson","Canon","Latex","UV Mimaki"],lams:[],note:"Holographic ห้ามเคลือบ"},
+  {name:"พรายน้ำ เรืองแสง",cat:"สติ๊กเกอร์",mat:280,roll_w:1.37,inks:["Epson","Canon","Latex","UV Mimaki"],lams:["FloorGuard"]},
+  {name:"แคนวาส",cat:"สติ๊กเกอร์",mat:120,roll_w:1.37,inks:["Epson","Canon","Latex","UV Mimaki"],lams:[]},
+  {name:"PP STICKER ECO",cat:"สติ๊กเกอร์",mat:31,roll_w:1.30,inks:["Epson","Canon","Latex"],lams:["SUJET เงาผิวเรียบ"]},
+  {name:"PP STICKER OUTDOOR",cat:"สติ๊กเกอร์",mat:53,roll_w:1.30,inks:["Epson","Canon","Latex"],lams:["SUJET เงาผิวเรียบ"]},
+  {name:"PP Metallic ทอง/เงิน",cat:"Digital",mat:63,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"PP Clear ใส",cat:"Digital",mat:33,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"PET ขุ่น 125 Mic.",cat:"Digital",mat:84,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"PET ขุ่น 200 Mic.",cat:"Digital",mat:114,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"PET ขุ่น 250 Mic.",cat:"Digital",mat:126,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"PET Clear 250 Mic.",cat:"Digital",mat:112,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"PET Clear 190 Mic.",cat:"Digital",mat:80,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"PET Clear 125 Mic.",cat:"Digital",mat:57,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"สติกเกอร์กระดาษคราฟท์ A3+",cat:"Digital",mat:42,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"กระดาษคราฟ 300 แกรม A3+",cat:"Digital",mat:12,rigid:true,dbl:true,sheet:[0.33,0.48],inks:["UV FB"],lams:[]},
+  {name:"แผ่น PVC ขาว 0.3 มม.",cat:"แผ่นพลาสติก",mat:135,inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true,sheet:[0.61,1.46]},
+  {name:"แผ่น PVC ขาว 0.5 มม.",cat:"แผ่นพลาสติก",mat:152,inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true,sheet:[0.61,1.46]},
+  {name:"เซลลูลอยด์ใส 0.3 mm",cat:"แผ่นพลาสติก",mat:94,inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true,sheet:[0.71,1.20]},
+  {name:"เซลลูลอยด์ใส 0.5 mm",cat:"แผ่นพลาสติก",mat:112,inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true,sheet:[0.71,1.20]},
+  {name:"HIP 1 มม.(ขาว/ดำ)",cat:"แผ่นพลาสติก",mat:115,inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true,sheet:[1.20,2.40]},
+  {name:"PP Board 3 มม.",cat:"แผ่นพลาสติก",mat:25,inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true,sheet:[1.30,2.45]},
+  {name:"PP Board 5 มม.",cat:"แผ่นพลาสติก",mat:41,inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true,sheet:[1.30,2.45]},
+  {name:"Foamboard 5mm",cat:"แผ่นพลาสติก",mat:95,inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true,sheet:[1.22,2.44]},
+  {name:"พลาสวูด 1 มม.",cat:"พลาสวูด",mat:75,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:["SUJET เงาผิวเรียบ"],rigid:true,dbl:true},
+  {name:"พลาสวูด 2 มม.",cat:"พลาสวูด",mat:100,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:["SUJET เงาผิวเรียบ"],rigid:true,dbl:true},
+  {name:"พลาสวูด 3 มม.",cat:"พลาสวูด",mat:215,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:["SUJET เงาผิวเรียบ"],rigid:true,dbl:true},
+  {name:"พลาสวูด 5 มม.",cat:"พลาสวูด",mat:310,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:["SUJET เงาผิวเรียบ"],rigid:true,dbl:true},
+  {name:"พลาสวูด 8 มม.",cat:"พลาสวูด",mat:330,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:["SUJET เงาผิวเรียบ"],rigid:true,dbl:true},
+  {name:"พลาสวูด 10 มม.",cat:"พลาสวูด",mat:390,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:["SUJET เงาผิวเรียบ"],rigid:true,dbl:true},
+  {name:"พลาสวูด 20 มม.",cat:"พลาสวูด",mat:860,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:["SUJET เงาผิวเรียบ"],rigid:true,dbl:true},
+  {name:"พลาสวูด 25 มม.",cat:"พลาสวูด",mat:940,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:["SUJET เงาผิวเรียบ"],rigid:true,dbl:true},
+  {name:"อะคริลิค 1.5 มม.",cat:"อะคริลิค",mat:260,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 2 มม.",cat:"อะคริลิค",mat:280,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 3 มม.",cat:"อะคริลิค",mat:460,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 4 มม.",cat:"อะคริลิค",mat:540,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 5 มม.",cat:"อะคริลิค",mat:720,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 8 มม.",cat:"อะคริลิค",mat:1160,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 10 มม.",cat:"อะคริลิค",mat:1560,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 15 มม.",cat:"อะคริลิค",mat:2100,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 20 มม.",cat:"อะคริลิค",mat:4000,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อะคริลิค 25 มม.",cat:"อะคริลิค",mat:5050,sheet:[1.22,2.44],inks:["UV FB","Epson","Latex"],lams:[],rigid:true,dbl:true},
+  {name:"อลูมิเนียม 0.5 มม.",cat:"อลูมิเนียม",mat:280,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:true},
+  {name:"อลูมิเนียม 1 มม.",cat:"อลูมิเนียม",mat:480,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:true},
+  {name:"อลูมิเนียม 2 มม.",cat:"อลูมิเนียม",mat:900,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:true},
+  {name:"อลูมิเนียม 3 มม.",cat:"อลูมิเนียม",mat:1450,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:true},
+  {name:"คอมโพสิต 4 มม. (ทุกสีทุกยี่ห้อ)",cat:"คอมโพสิต",mat:600,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:false},
+  {name:"สแตนเลสเงา BA",cat:"สแตนเลส",mat:1400,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:false},
+  {name:"สแตนเลส Mirror เงินเงา-แฮร์ไลน์",cat:"สแตนเลส",mat:1800,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:false},
+  {name:"สแตนเลส Mirror ทองเงา-แฮร์ไลน์",cat:"สแตนเลส",mat:2500,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:false},
+  {name:"สีพิเศษเงา-แฮร์ไลน์ (Anti-FingerPrint)",cat:"สแตนเลส",mat:4500,sheet:[1.22,2.44],inks:["UV FB"],lams:[],rigid:true,dbl:false}
+];
+
+var INK_PRICE={"Solvent":50,"UV FB":200,"Epson":100,"Canon":200,"Latex":250,"UV Mimaki":250};
+var LAM_PRICE={"3M 8520 เคลือบด้าน":410,"3M 4156 เคลือบเงา":80,"3M 4157 เคลือบด้าน":80,"3M FILM IJ40-114":205,"SUJET เงาผิวเรียบ":16,"FloorGuard":182};
+var MOUNT_LABELS={200:"Value",350:"มาตรฐาน",600:"คุณภาพสูง",1000:"สะท้อนแสง",1800:"ไดมอนด์"};
+var CAT_ICON={"ไวนิล":"🎨","สติ๊กเกอร์":"🔖","Digital":"🖨️","แผ่นพลาสติก":"🧊","พลาสวูด":"🪵","อะคริลิค":"💎","อลูมิเนียม":"🔧","คอมโพสิต":"🔩","สแตนเลส":"✨"};
+
+var CAT_TIERS={
+  "ไวนิล":[{label:"🔴 Micro",max:500,ratio:0.25,note:"ชิ้นเล็ก"},{label:"🟡 Tiny",max:1000,ratio:0.35,note:"ต่ำพัน"},{label:"🟠 Small",max:3000,ratio:0.50,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:8000,ratio:0.60,note:"sweet spot"},{label:"🔵 Large",max:35000,ratio:0.65,note:"ตลาดเดือด"},{label:"⚫ Bulk",max:Infinity,ratio:0.68,note:"bulk"}],
+  "สติ๊กเกอร์":[{label:"🔴 Micro",max:500,ratio:0.35,note:"ดวงเล็ก"},{label:"🟡 Tiny",max:1000,ratio:0.38,note:"ต่ำพัน"},{label:"🟠 Small",max:3000,ratio:0.40,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:10000,ratio:0.50,note:"sweet spot"},{label:"🔵 Large",max:60000,ratio:0.60,note:"B2B"},{label:"⚫ Bulk",max:Infinity,ratio:0.65,note:"bulk"}],
+  "Digital":[{label:"🔴 Micro",max:500,ratio:0.28,note:"ชิ้นเล็ก"},{label:"🟡 Tiny",max:1000,ratio:0.30,note:"ต่ำพัน"},{label:"🟠 Small",max:3000,ratio:0.35,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:15000,ratio:0.45,note:"sweet spot"},{label:"🔵 Large",max:60000,ratio:0.55,note:"B2B"},{label:"⚫ Bulk",max:Infinity,ratio:0.60,note:"bulk"}],
+  "แผ่นพลาสติก":[{label:"🔴 Micro",max:500,ratio:0.22,note:"ตัดชิ้นเล็ก"},{label:"🟡 Tiny",max:1000,ratio:0.33,note:"ต่ำพัน"},{label:"🟠 Small",max:3000,ratio:0.42,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:15000,ratio:0.50,note:"sweet spot"},{label:"🔵 Large",max:60000,ratio:0.55,note:"B2B"},{label:"⚫ Bulk",max:Infinity,ratio:0.58,note:"bulk"}],
+  "พลาสวูด":[{label:"🔴 Micro",max:500,ratio:0.20,note:"ชิ้นเล็ก"},{label:"🟡 Tiny",max:1000,ratio:0.30,note:"ต่ำพัน"},{label:"🟠 Small",max:3000,ratio:0.40,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:15000,ratio:0.48,note:"sweet spot"},{label:"🔵 Large",max:60000,ratio:0.53,note:"B2B"},{label:"⚫ Bulk",max:Infinity,ratio:0.56,note:"bulk"}],
+  "อะคริลิค":[{label:"🔴 Micro",max:500,ratio:0.18,note:"ตัดยาก"},{label:"🟡 Tiny",max:1000,ratio:0.27,note:"ต่ำพัน"},{label:"🟠 Small",max:3000,ratio:0.36,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:15000,ratio:0.44,note:"sweet spot"},{label:"🔵 Large",max:60000,ratio:0.50,note:"B2B"},{label:"⚫ Bulk",max:Infinity,ratio:0.53,note:"bulk"}],
+  "อลูมิเนียม":[{label:"🔴 Micro",max:500,ratio:0.18,note:"ตัดเล็กยาก"},{label:"🟡 Tiny",max:1000,ratio:0.26,note:"ต่ำพัน"},{label:"🟠 Small",max:3000,ratio:0.34,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:15000,ratio:0.42,note:"sweet spot"},{label:"🔵 Large",max:60000,ratio:0.48,note:"B2B"},{label:"⚫ Bulk",max:Infinity,ratio:0.52,note:"bulk"}],
+  "คอมโพสิต":[{label:"🔴 Micro",max:500,ratio:0.18,note:"ตัดยาก"},{label:"🟡 Tiny",max:1000,ratio:0.26,note:"ต่ำพัน"},{label:"🟠 Small",max:3000,ratio:0.34,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:15000,ratio:0.42,note:"sweet spot"},{label:"🔵 Large",max:60000,ratio:0.47,note:"B2B"},{label:"⚫ Bulk",max:Infinity,ratio:0.50,note:"bulk"}],
+  "สแตนเลส":[{label:"🔴 Micro",max:500,ratio:0.15,note:"ไฟเบอร์ยาก"},{label:"🟡 Tiny",max:1000,ratio:0.20,note:"ต่ำพัน"},{label:"🟠 Small",max:4500,ratio:0.30,note:"ต่ำสามพัน"},{label:"🟢 Medium",max:15000,ratio:0.45,note:"sweet spot"},{label:"🔵 Large",max:60000,ratio:0.50,note:"B2B"},{label:"⚫ Bulk",max:Infinity,ratio:0.55,note:"bulk"}]
+};
+
+var CAT_MIN_PIECE={"ไวนิล":0,"สติ๊กเกอร์":3,"Digital":5,"แผ่นพลาสติก":20,"พลาสวูด":35,"อะคริลิค":60,"อลูมิเนียม":80,"คอมโพสิต":120,"สแตนเลส":250};
+var UNIT_FAC={m:1,cm:0.01,in:0.0254};
+var UNIT_LBL={m:"ม.",cm:"ซม.",in:"in"};
+
+var S={cat:"",item:null,rigidMode:"uvfb",ink:"",lam:"",mountCost:0,doublesided:false,unit:"m",qtyMode:"sqm",w:0,h:0,pcs:0,pw:0,ph:0,gap:0.005,bleed:0.025,setup:0,design:0,install:0,rush:false,vat:false,override:false,customRatio:0.50};
+
+function fmt(n){return n.toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function fmtR(n){return Math.round(n).toLocaleString('th-TH');}
+function getTiers(){return CAT_TIERS[S.cat]||CAT_TIERS["สติ๊กเกอร์"];}
+function getTier(cost){var t=getTiers();for(var i=0;i<t.length;i++)if(cost<=t[i].max)return t[i];return t[t.length-1];}
+function show(id){var e=document.getElementById(id);if(e)e.classList.remove('calc-panel--hidden','calc-result--hidden');}
+function hide(id){var e=document.getElementById(id);if(e)e.classList.add('calc-panel--hidden','calc-result--hidden');}
+function getArea(){var f=UNIT_FAC[S.unit]||1;return S.qtyMode==='sqm'?S.w*f*S.h*f:S.pcs*S.pw*f*S.ph*f;}
+function roundPrice(raw){if(raw<200)return Math.ceil(raw/10)*10;if(raw<2000)return Math.ceil(raw/50)*50;if(raw<10000)return Math.ceil(raw/100)*100;if(raw<50000)return Math.ceil(raw/500)*500;return Math.ceil(raw/1000)*1000;}
+
+function buildCats(){
+  var wrap=document.getElementById('catButtons');if(!wrap)return;
+  var seen={},cats=[];
+  ITEMS.forEach(function(it){if(!seen[it.cat]){seen[it.cat]=1;cats.push(it.cat);}});
+  cats.forEach(function(c){
+    var btn=document.createElement('button');btn.className='calc-cat-btn';btn.dataset.cat=c;
+    btn.textContent=(CAT_ICON[c]||'📦')+' '+c;btn.onclick=function(){selectCat(c);};
+    wrap.appendChild(btn);
+  });
+}
+
+function buildTierTable(){
+  var lbl=document.getElementById('tier-cat-label');if(lbl)lbl.textContent=(CAT_ICON[S.cat]||'')+' '+S.cat;
+  var tb=document.getElementById('tierBody');if(!tb)return;tb.innerHTML='';
+  getTiers().forEach(function(t,i){
+    var tr=document.createElement('tr');tr.id='tier-row-'+i;
+    tr.innerHTML='<td>'+t.label+'</td><td>'+(t.desc||('≤ '+fmtR(t.max)))+'</td><td class="tier-ratio-cell">'+t.ratio+'</td><td style="color:#475569">÷ '+t.ratio+'</td><td>'+(t.note||'')+'</td>';
+    tb.appendChild(tr);
+  });
+}
+function updateTierHL(cost){
+  var active=getTier(cost);
+  getTiers().forEach(function(t,i){var r=document.getElementById('tier-row-'+i);if(r)r.classList.toggle('tier-active',t===active);});
+}
+
+function selectCat(c){
+  S.cat=c;S.item=null;S.ink='';S.lam='';S.mountCost=0;S.rigidMode='uvfb';S.doublesided=false;
+  document.querySelectorAll('.calc-cat-btn').forEach(function(b){b.classList.toggle('active',b.dataset.cat===c);});
+  var sel=document.getElementById('itemSelect');
+  sel.innerHTML='<option value="">-- เลือกวัสดุ --</option>';
+  ITEMS.filter(function(it){return it.cat===c;}).forEach(function(it){
+    var o=document.createElement('option');o.value=it.name;
+    o.textContent=it.name+' — ทุน '+Math.round(it.mat)+' บ./ตร.ม.';
+    sel.appendChild(o);
+  });
+  sel.value='';
+  document.getElementById('itemNote').classList.add('calc-note--hidden');
+  hide('step-print');hide('step-qty');hide('step-extra');hide('tier-panel');hide('resultPanel');
+  var lp=document.getElementById('layoutPanel');if(lp)lp.style.display='none';
+  var wp=document.getElementById('wastePanel');if(wp)wp.style.display='none';
+  show('step-item');
+}
+
+function selectItem(name){
+  S.item=ITEMS.find(function(it){return it.name===name;})||null;
+  S.ink='';S.lam='';S.mountCost=0;S.rigidMode='uvfb';S.doublesided=false;
+  var noteEl=document.getElementById('itemNote');
+  if(S.item&&S.item.note){noteEl.textContent='⚠️ '+S.item.note;noteEl.classList.remove('calc-note--hidden');}
+  else noteEl.classList.add('calc-note--hidden');
+  if(!S.item){hide('step-print');hide('step-qty');hide('step-extra');hide('tier-panel');hide('resultPanel');return;}
+  var isRigid=!!S.item.rigid;
+  document.getElementById('print-normal').style.display=isRigid?'none':'';
+  document.getElementById('print-rigid').style.display=isRigid?'':'none';
+  if(isRigid){
+    var uvBox=document.getElementById('uvfb-info-text');
+    if(uvBox){var uvPrice=(S.cat==="สแตนเลส")?350:250;uvBox.innerHTML='✦ UV Flatbed — ทุนค่าพิมพ์ <strong>'+uvPrice+' บาท/ตร.ม.</strong>';}
+    setRigidMode('uvfb');
+  } else {
+    var inkSel=document.getElementById('inkSelect');inkSel.innerHTML='<option value="">-- เลือกหมึก --</option>';
+    S.item.inks.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=k+' — ทุน '+INK_PRICE[k]+' บ./ตร.ม.';inkSel.appendChild(o);});inkSel.value='';
+    var lamSel=document.getElementById('lamSelect');lamSel.innerHTML='<option value="">-- ไม่เคลือบ --</option>';
+    var lamLbl=document.getElementById('lamLabel');
+    if(S.item.lams&&S.item.lams.length>0){S.item.lams.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=k+' — ทุน '+LAM_PRICE[k]+' บ./ตร.ม.';lamSel.appendChild(o);});lamSel.disabled=false;lamLbl.textContent='ฟิล์มเคลือบ';}
+    else{lamSel.disabled=true;lamLbl.textContent='ฟิล์มเคลือบ (ไม่มีสำหรับวัสดุนี้)';}
+    lamSel.value='';
+  }
+  buildTierTable();show('step-print');show('step-qty');show('step-extra');show('tier-panel');updateGapRow();recalc();
+}
+
+window.setRigidMode=function(mode){
+  S.rigidMode=mode;S.mountCost=0;S.doublesided=false;
+  document.getElementById('btn-uvfb').classList.toggle('calc-mode-btn--active',mode==='uvfb');
+  document.getElementById('btn-mount').classList.toggle('calc-mode-btn--active',mode==='mount');
+  document.getElementById('rigid-uvfb-opts').style.display=mode==='uvfb'?'':'none';
+  document.getElementById('rigid-mount-opts').style.display=mode==='mount'?'':'none';
+  document.querySelectorAll('.mount-grade-btn').forEach(function(b){b.classList.remove('active');});
+  var canDbl=S.item&&S.item.dbl;
+  var dsRow=document.getElementById('doublesided-row');var dsMRow=document.getElementById('doublesided-mount-row');
+  if(dsRow)dsRow.style.display=(mode==='uvfb'&&canDbl)?'':'none';
+  if(dsMRow)dsMRow.style.display=(mode==='mount'&&canDbl)?'':'none';
+  var dsChk=document.getElementById('chk-doublesided');var dsMChk=document.getElementById('chk-doublesided-mount');
+  if(dsChk)dsChk.checked=false;if(dsMChk)dsMChk.checked=false;
+  recalc();
+};
+window.setMountGrade=function(btn){
+  S.mountCost=parseInt(btn.dataset.cost)||0;
+  document.querySelectorAll('.mount-grade-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');recalc();
+};
+window.setUnit=function(btn){
+  S.unit=btn.dataset.unit;
+  document.querySelectorAll('.unit-btn').forEach(function(b){b.classList.remove('calc-mode-btn--active');});btn.classList.add('calc-mode-btn--active');
+  var ul=UNIT_LBL[S.unit];
+  [['lbl-w','กว้าง'],['lbl-h','สูง'],['lbl-pw','กว้าง/ชิ้น'],['lbl-ph','สูง/ชิ้น']].forEach(function(p){var el=document.getElementById(p[0]);if(el)el.textContent=p[1]+' ('+ul+')';});
+  recalc();
+};
+window.setQtyMode=function(btn){
+  S.qtyMode=btn.dataset.mode;
+  document.querySelectorAll('[data-mode]').forEach(function(b){if(b.classList.contains('calc-mode-btn'))b.classList.remove('calc-mode-btn--active');});btn.classList.add('calc-mode-btn--active');
+  document.getElementById('mode-sqm').style.display=S.qtyMode==='sqm'?'':'none';
+  document.getElementById('mode-piece').style.display=S.qtyMode==='piece'?'':'none';
+  updateGapRow();recalc();
+};
+
+function updateGapRow(){
+  var isRigid=S.item&&S.item.rigid,isRoll=S.item&&S.item.roll_w;
+  var gapRow=document.getElementById('gap-row');var sheetBox=document.getElementById('sheet-info-box');var sheetTxt=document.getElementById('sheet-info-text');
+  if(gapRow)gapRow.style.display=(isRigid||(isRoll&&S.qtyMode==='piece'))?'':'none';
+  if(sheetBox&&sheetTxt){
+    if(S.item&&S.item.sheet){var sw=S.item.sheet[0],sh=S.item.sheet[1];sheetTxt.textContent='แผ่น '+sw*100+'×'+sh*100+' ซม. ('+(sw*sh).toFixed(2)+' ตร.ม./แผ่น)';sheetBox.style.display='';}
+    else if(S.item&&S.item.roll_w){sheetTxt.textContent='ม้วนกว้าง '+(S.item.roll_w*100)+' ซม.';sheetBox.style.display='';}
+    else sheetBox.style.display='none';
+  }
+}
+
+function calcRigidSheetArea(pcs,pw,ph,gap,bleed,sheet){
+  if(!sheet||pcs<=0||pw<=0||ph<=0)return{area:pcs*pw*ph,mode:'naive',debug:null};
+  var sw=sheet[0],sh=sheet[1],sheet_area=sw*sh,naive_area=pcs*pw*ph;
+  var usable_sw=sw-(bleed*2),usable_sh=sh-(bleed*2);
+  if(usable_sw<=0||usable_sh<=0){usable_sw=0.001;usable_sh=0.001;}
+  function tryFit(w,h){
+    if(w<=usable_sw&&h<=usable_sh){var c=Math.floor((usable_sw+gap)/(w+gap)),r=Math.floor((usable_sh+gap)/(h+gap));if(c<1)c=1;if(r<1)r=1;var pps=c*r,sheets=Math.ceil(pcs/pps),last_fill=(pcs%pps===0)?1.0:((pcs%pps)/pps);return{sheets:sheets,pps:pps,cols:c,rows:r,last_fill:last_fill,type:'nesting',layout:c+'×'+r+' ชิ้น/แผ่น'};}
+    else{var c=Math.ceil(w/usable_sw),r=Math.ceil(h/usable_sh),sheets_per_piece=c*r,sheets=sheets_per_piece*pcs,fill=(w*h)/(sheets_per_piece*sheet_area);return{sheets:sheets,pps:1/sheets_per_piece,cols:c,rows:r,last_fill:fill,type:'paneling',layout:'ต่อ '+c+'×'+r+' แผ่น/ชิ้น'};}
+  }
+  var fit1=tryFit(pw,ph),fit2=tryFit(ph,pw),bestFit=(fit1.sheets<fit2.sheets)?fit1:fit2;
+  if(fit1.sheets===fit2.sheets)bestFit=(fit1.last_fill>fit2.last_fill)?fit1:fit2;
+  var rotated=(bestFit===fit2)&&(pw!==ph),sheets_ceil=bestFit.sheets,mat_area,usable=false;
+  if(bestFit.type==='nesting'){
+    var remaining=1-bestFit.last_fill,remaining_area=remaining*sheet_area;
+    usable=(remaining>=0.35)||(remaining_area>=(pw*ph));
+    var full_sheets=Math.floor(pcs/bestFit.pps),remainder_pcs=pcs%bestFit.pps;
+    if(remainder_pcs===0){mat_area=full_sheets*sheet_area;usable=false;}
+    else if(usable){var slot_area=(pw+gap)*(ph+gap);mat_area=(full_sheets*sheet_area)+(remainder_pcs*slot_area*1.25);if(mat_area<naive_area*1.15)mat_area=naive_area*1.15;}
+    else mat_area=sheets_ceil*sheet_area;
+  } else {
+    var total_waste=(sheets_ceil*sheet_area)-naive_area;usable=(total_waste>=sheet_area*0.5);
+    mat_area=usable?naive_area*1.25:sheets_ceil*sheet_area;
+  }
+  return{area:mat_area,mode:'sheet_unified',debug:{sheet_w:sw,sheet_h:sh,sheet_area:sheet_area,pw:pw,ph:ph,bleed:bleed,cols:bestFit.cols,rows:bestFit.rows,pps:bestFit.pps,sheets_ceil:sheets_ceil,last_fill:bestFit.last_fill,fit_type:bestFit.type,layout:bestFit.layout,rotated:rotated,naive_area:naive_area,usable:usable,waste_pct:Math.round((mat_area/naive_area-1)*100)}};
+}
+
+function calcRollArea(pcs,pw_m,ph_m,gap_m,bleed,roll_w){
+  if(!roll_w||pcs<=0||pw_m<=0||ph_m<=0)return{area:pcs*pw_m*ph_m,mode:'naive',debug:null};
+  var naive_area=pcs*pw_m*ph_m,usable_roll=roll_w-(bleed*2);if(usable_roll<=0)usable_roll=0.001;
+  var cols=Math.max(1,Math.floor((usable_roll+gap_m)/(pw_m+gap_m))),rows=Math.ceil(pcs/cols);
+  var lead_tail=Math.min(0.60,Math.max(0.30,ph_m+gap_m)),calib=0.10;
+  var print_len=rows*(ph_m+gap_m)+lead_tail+calib,raw_area=print_len*roll_w,buffered=raw_area*1.15;
+  return{area:buffered,mode:'roll',debug:{roll_w:roll_w,cols:cols,rows:rows,print_len:print_len,raw_area:raw_area,lead_tail:lead_tail,calib:calib,naive:naive_area,buffered:buffered,overhead:buffered-naive_area}};
+}
+
+function drawLayoutCanvas(debug,pcs){
+  var panel=document.getElementById('layoutPanel'),canvas=document.getElementById('layoutCanvas'),legend=document.getElementById('layoutLegend');
+  if(!panel||!canvas||!debug)return;
+  if(debug.fit_type!=='nesting'){panel.style.display='none';return;}
+  panel.style.display='';
+  var sw=debug.sheet_w,sh=debug.sheet_h,cols=debug.cols,rows=debug.rows,pps=Math.round(cols*rows),sheets_ceil=debug.sheets_ceil,sheetsToShow=Math.min(sheets_ceil,3),sheetGapPx=16,labelTopH=24,labelBotH=24;
+  var availW=(panel.offsetWidth||700)-32;if(availW<200)availW=200;
+  var maxSheetW=(availW-(sheetsToShow-1)*sheetGapPx)/sheetsToShow,maxSheetH=520,scale=Math.min(maxSheetW/sw,maxSheetH/sh);
+  if(scale<=0||!isFinite(scale))scale=100;
+  var sheetPxW=Math.max(10,Math.floor(sw*scale)),sheetPxH=Math.max(10,Math.floor(sh*scale)),canvasW=sheetsToShow*sheetPxW+(sheetsToShow-1)*sheetGapPx,canvasH=sheetPxH+labelTopH+labelBotH;
+  var dpr=window.devicePixelRatio||1;canvas.width=Math.round(canvasW*dpr);canvas.height=Math.round(canvasH*dpr);canvas.style.width=canvasW+'px';canvas.style.height=canvasH+'px';
+  var ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,canvasW,canvasH);
+  var pw_px=debug.rotated?debug.ph*scale:debug.pw*scale,ph_px=debug.rotated?debug.pw*scale:debug.ph*scale,gap_px=S.gap*scale,bleed_px=debug.bleed*scale;
+  for(var si=0;si<sheetsToShow;si++){
+    var sX=si*(sheetPxW+sheetGapPx),sY=labelTopH;
+    ctx.fillStyle='#eef2ff';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(sX,sY,sheetPxW,sheetPxH,4);else ctx.rect(sX,sY,sheetPxW,sheetPxH);ctx.fill();
+    ctx.strokeStyle='#a5b4fc';ctx.lineWidth=1.5;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(sX,sY,sheetPxW,sheetPxH,4);else ctx.rect(sX,sY,sheetPxW,sheetPxH);ctx.stroke();
+    if(bleed_px>0){ctx.strokeStyle='#ef4444';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();if(ctx.roundRect)ctx.roundRect(sX+bleed_px,sY+bleed_px,sheetPxW-bleed_px*2,sheetPxH-bleed_px*2,2);else ctx.rect(sX+bleed_px,sY+bleed_px,sheetPxW-bleed_px*2,sheetPxH-bleed_px*2);ctx.stroke();ctx.setLineDash([]);}
+    ctx.fillStyle='#6366f1';var lbfs=Math.max(10,Math.min(14,Math.round(sheetPxW*0.08)));ctx.font='bold '+lbfs+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(Math.round(sw*100)+'×'+Math.round(sh*100)+' ซม.',sX+sheetPxW/2,labelTopH/2);
+    var startX=sX+bleed_px+gap_px*0.5,startY=sY+bleed_px+gap_px*0.5;
+    for(var r=0;r<rows;r++){for(var c=0;c<cols;c++){
+      var pieceIdx=si*pps+r*cols+c,px=startX+c*(pw_px+gap_px),py=startY+r*(ph_px+gap_px);
+      if(px+pw_px>sX+sheetPxW-bleed_px+1||py+ph_px>sY+sheetPxH-bleed_px+1)continue;
+      ctx.globalAlpha=pieceIdx<pcs?0.85:0.5;ctx.fillStyle=pieceIdx<pcs?'#4f46e5':'#e2e8f0';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(px,py,pw_px,ph_px,Math.min(3,pw_px*0.12));else ctx.rect(px,py,pw_px,ph_px);ctx.fill();ctx.globalAlpha=1;
+      if(pieceIdx<pcs&&pw_px>14&&ph_px>10){ctx.fillStyle='#fff';var nfs=Math.max(8,Math.min(14,Math.round(ph_px*0.4)));ctx.font='bold '+nfs+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(pieceIdx+1,px+pw_px/2,py+ph_px/2);}
+    }}
+    ctx.fillStyle='#94a3b8';ctx.font='11px sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
+    var lbl='แผ่น '+(si+1);if(si===sheetsToShow-1&&sheets_ceil>sheetsToShow)lbl+=' … (+'+(sheets_ceil-sheetsToShow)+' แผ่น)';ctx.fillText(lbl,sX+sheetPxW/2,sY+sheetPxH+4);
+  }
+  legend.innerHTML='';
+  function mkDot(col,txt,al,border){var s=document.createElement('span');s.style.cssText='display:flex;align-items:center;gap:5px';var d=document.createElement('span');d.style.cssText='width:10px;height:10px;border-radius:2px;background:'+col+';opacity:'+(al||1)+';flex-shrink:0;';if(border)d.style.border=border;s.appendChild(d);var t=document.createElement('span');t.textContent=txt;s.appendChild(t);legend.appendChild(s);}
+  mkDot('#4f46e5',pcs+' ชิ้นงาน',0.82);if(debug.bleed>0)mkDot('transparent','Bleed '+(debug.bleed*100)+' ซม.',1,'1px dashed #ef4444');
+  var empty=Math.max(0,sheetsToShow*pps-Math.min(pcs,sheetsToShow*pps));if(empty>0)mkDot('#e2e8f0',empty+' ช่องว่าง',0.8);
+  mkDot('#a5b4fc',Math.round(sw*100)+'×'+Math.round(sh*100)+' ซม. | '+pps+' ชิ้น/แผ่น',1);
+  if(sheets_ceil>sheetsToShow)mkDot('#f59e0b','รวม '+sheets_ceil+' แผ่น (แสดง '+sheetsToShow+')',1);
+  if(debug.rotated)mkDot('#818cf8','หมุน 90° (ประหยัด)',1);
+}
+
+var _wasteOpen=true,_layoutOpen=true;
+window.toggleLayout=function(){_layoutOpen=!_layoutOpen;var w=document.getElementById('layoutCanvasWrap'),b=document.getElementById('layoutToggle');if(w)w.style.display=_layoutOpen?'':'none';if(b)b.textContent=_layoutOpen?'ซ่อน ▲':'แสดง ▼';};
+window.toggleWaste=function(){_wasteOpen=!_wasteOpen;var steps=document.getElementById('wasteSteps'),btn=document.getElementById('wasteToggle');if(steps)steps.style.display=_wasteOpen?'':'none';if(btn)btn.textContent=_wasteOpen?'ซ่อน ▲':'แสดง ▼';};
+
+function buildWastePanel(areaResult,unit,pcs,pw,ph,gap){
+  var panel=document.getElementById('wastePanel'),steps=document.getElementById('wasteSteps');if(!panel||!steps)return;
+  var mode=areaResult.mode,dbg=areaResult.debug,area=areaResult.area;
+  if(mode==='sqm'||!dbg){panel.style.display='none';return;}
+  panel.style.display='';steps.innerHTML='';steps.style.display=_wasteOpen?'':'none';
+  function addStep(num,label,detail,val){var d=document.createElement('div');d.className='waste-step';d.innerHTML='<div class="waste-step__num">'+num+'</div><div class="waste-step__body"><div class="waste-step__label">'+label+'</div><div class="waste-step__detail">'+detail+'</div></div><div class="waste-step__val">'+val+'</div>';steps.appendChild(d);}
+  var ul=UNIT_LBL[unit]||'ม.',f=UNIT_FAC[unit]||1,pw_m=pw*f,ph_m=ph*f;
+  if(mode==='roll'){
+    var rd=dbg,naive_pct=rd.naive>0?Math.round((rd.buffered/rd.naive-1)*100):0;
+    addStep(1,'ขนาดชิ้นงาน & ม้วน','ม้วนกว้าง '+rd.roll_w*100+' ซม.',pcs+' ชิ้น');
+    addStep(2,'จำนวนชิ้นต่อแถว','floor('+rd.cols+')',rd.cols+' ชิ้น/แถว');
+    addStep(3,'จำนวนแถว','ceil('+pcs+' ÷ '+rd.cols+')',rd.rows+' แถว');
+    addStep(4,'ความยาวพิมพ์จริง',rd.rows+' แถว + lead/tail '+Math.round(rd.lead_tail*100)+'ซม.',fmt(rd.print_len)+' ม.');
+    addStep(5,'พื้นที่ก่อน buffer',fmt(rd.print_len)+' × '+rd.roll_w*100+'ซม.',fmt(rd.raw_area)+' ตร.ม.');
+    addStep(6,'บวก buffer +15%',fmt(rd.raw_area)+' × 1.15',fmt(rd.buffered)+' ตร.ม.');
+    var tot=document.createElement('div');tot.className='waste-total';tot.innerHTML='<span class="waste-total__label">พื้นที่เรียกเก็บ</span><span class="waste-total__val">'+fmt(area)+' ตร.ม. (+'+naive_pct+'%)</span>';steps.appendChild(tot);
+  } else if(mode==='sheet_unified'){
+    var sdu=dbg;
+    addStep(1,'ขนาดชิ้นงาน','กว้าง '+Math.round(sdu.pw*100)+'×'+Math.round(sdu.ph*100)+' ซม.',fmt(sdu.naive_area)+' ตร.ม.');
+    addStep(2,'การตัด ('+(sdu.fit_type==='nesting'?'ตัดย่อย':'ตัดต่อแผ่น')+')',sdu.layout,sdu.sheets_ceil+' แผ่น');
+    addStep(3,sdu.usable?'เศษคืนสต็อกได้':'เศษขยะ บวกเข้าต้นทุน',sdu.usable?'ใหญ่พอหมุนเวียน':'เล็กเกิน',sdu.usable?'✓ คืนสต็อก':'เหมาแผ่น');
+    var totU=document.createElement('div');totU.className='waste-total';totU.innerHTML='<span class="waste-total__label">พื้นที่เรียกเก็บ (Waste '+sdu.waste_pct+'%)</span><span class="waste-total__val">'+fmt(area)+' ตร.ม.</span>';steps.appendChild(totU);
+  }
+}
+
+function recalc(){
+  if(!S.item)return;
+  var f=UNIT_FAC[S.unit]||1,isRollPiece=!!(S.item.roll_w&&S.qtyMode==='piece'&&S.pcs>0),areaResult;
+  if(S.item.rigid){var p_pcs=(S.qtyMode==='piece')?S.pcs:1,p_w=(S.qtyMode==='piece')?S.pw*f:S.w*f,p_h=(S.qtyMode==='piece')?S.ph*f:S.h*f;areaResult=calcRigidSheetArea(p_pcs,p_w,p_h,S.gap,S.bleed,S.item.sheet);}
+  else if(isRollPiece){areaResult=calcRollArea(S.pcs,S.pw*f,S.ph*f,S.gap,S.bleed,S.item.roll_w);}
+  else{
+    var naiveArea=getArea();
+    if(S.item.roll_w&&naiveArea>0){var rw=S.item.roll_w,h_m=(S.qtyMode==='sqm'?S.h:S.ph)*f,lead_tail=Math.min(0.60,Math.max(0.30,h_m)),calib=0.10,printLen_naive=naiveArea/rw,printLen_real=printLen_naive+lead_tail+calib,raw_area=printLen_real*rw,buffered=raw_area*1.15;areaResult={area:buffered,mode:'sqm_roll',debug:{roll_w:rw,naive:naiveArea,lead_tail:lead_tail,calib:calib,printLen_naive:printLen_naive,printLen_real:printLen_real,raw_area:raw_area,buffered:buffered,overhead:buffered-naiveArea}};}
+    else areaResult={area:naiveArea,mode:'sqm',debug:null};
+  }
+  var area=areaResult.area,areaDebug=areaResult.debug,aEl=document.getElementById('areaDisplay');
+  if(area>0){
+    var as='';
+    if(areaResult.mode==='sheet_unified'&&areaDebug)as='📋 '+areaDebug.sheets_ceil+' แผ่น | '+areaDebug.layout+(areaDebug.rotated?' 🔄':'')+(areaDebug.usable?' | เศษคืนสต็อก':' | เศษขยะ');
+    else if(areaResult.mode==='roll'&&areaDebug)as='🎞️ '+areaDebug.rows+' แถว × '+areaDebug.cols+' ชิ้น | ยาว '+fmt(areaDebug.print_len)+' ม.';
+    else if(areaResult.mode==='sqm_roll'&&areaDebug)as='🎞️ ยาวพิมพ์ '+fmt(areaDebug.printLen_real)+' ม. | '+fmt(area)+' ตร.ม.';
+    else as=fmt(area)+' ตร.ม.'+(S.qtyMode==='piece'&&S.pcs>0?' ('+S.pcs+' ชิ้น)':'');
+    aEl.textContent='พื้นที่รวม: '+as;aEl.classList.remove('calc-area-display--hidden');
+  } else aEl.classList.add('calc-area-display--hidden');
+
+  var isRigid=!!S.item.rigid,printReady=isRigid?(S.rigidMode==='uvfb'||(S.rigidMode==='mount'&&S.mountCost>0)):!!S.ink;
+  if(!area||!printReady){updateTierHL(0);hide('resultPanel');var lp=document.getElementById('layoutPanel');if(lp)lp.style.display='none';var wp=document.getElementById('wastePanel');if(wp)wp.style.display='none';return;}
+
+  var naivePrintArea,matArea,m=areaResult.mode,d=areaDebug;
+  if(m==='roll'||m==='sqm_roll'||m==='sheet_unified'){naivePrintArea=(d&&d.naive_area)?d.naive_area:(d&&d.naive?d.naive:area);matArea=area;}
+  else{naivePrintArea=area;matArea=area;}
+
+  var matCost=S.item.mat*matArea,printCost=0,lamCost=0,printDesc='',doubleSidedActive=false;
+  if(isRigid){
+    if(S.rigidMode==='uvfb'){var dsChk=document.getElementById('chk-doublesided');doubleSidedActive=dsChk&&dsChk.checked&&!!S.item.dbl;var printMul=doubleSidedActive?2:1,uvPrice=(S.cat==="สแตนเลส")?350:250;printCost=uvPrice*naivePrintArea*printMul;printDesc='UV Flatbed'+(doubleSidedActive?' × 2 ด้าน':'')+' — '+uvPrice+' บ./ตร.ม. × '+fmt(naivePrintArea)+' ตร.ม.';}
+    else{var dsMChk=document.getElementById('chk-doublesided-mount');doubleSidedActive=dsMChk&&dsMChk.checked&&!!S.item.dbl;var mountMul=doubleSidedActive?2:1;printCost=S.mountCost*naivePrintArea*mountMul;var mg=MOUNT_LABELS[S.mountCost]||('เกรด '+S.mountCost);printDesc='Mount '+mg+(doubleSidedActive?' × 2 ด้าน':'')+' — '+S.mountCost+' บ./ตร.ม.';}
+  } else {printCost=(INK_PRICE[S.ink]||0)*naivePrintArea;printDesc='หมึก '+S.ink+' — '+INK_PRICE[S.ink]+' บ./ตร.ม. × '+fmt(naivePrintArea)+' ตร.ม.';lamCost=(LAM_PRICE[S.lam]||0)*naivePrintArea;}
+
+  var costBase=matCost+printCost+lamCost,extraFixed=S.setup+S.design+S.install,totalCost=costBase+extraFixed,rushAdd=S.rush?totalCost*0.25:0,costFinal=totalCost+rushAdd;
+  var tier=getTier(costFinal),ratio=S.override?Math.max(0.01,Math.min(0.99,S.customRatio)):tier.ratio,rawSell=costFinal/ratio,vatAmt=S.vat?rawSell*0.07:0,rawTotal=rawSell+vatAmt,finalPrice=roundPrice(rawTotal);
+  updateTierHL(costFinal);
+
+  var minPiece=CAT_MIN_PIECE[S.cat]||0,pcs=S.qtyMode==='piece'?S.pcs:0,minNote=document.getElementById('minPieceNote'),pricePerPiece=pcs>0?finalPrice/pcs:0,minPieceAdjust=0;
+  if(pcs>0&&minPiece>0&&pricePerPiece<minPiece){var minTotal=roundPrice(minPiece*pcs*(S.vat?1.07:1));minPieceAdjust=minTotal-finalPrice;finalPrice=minTotal;if(minNote){minNote.textContent='⚠️ ราคาต่อชิ้นต่ำกว่าขั้นต่ำ ('+minPiece+' บ./ชิ้น) — ปรับขึ้นเป็น '+fmtR(finalPrice)+' บาท';minNote.classList.remove('calc-note--hidden');}}
+  else if(minNote)minNote.classList.add('calc-note--hidden');
+
+  var rows=document.getElementById('resultRows');rows.innerHTML='';
+  function addRow(lbl,val,sub,cls){var d=document.createElement('div');d.className='result-row'+(cls?' '+cls:'');d.innerHTML='<div class="result-row__label">'+lbl+(sub?'<small>'+sub+'</small>':'')+'</div><div class="result-row__val">'+val+'</div>';rows.appendChild(d);}
+
+  if(areaResult.mode==='sheet_unified'&&areaDebug){var sdu=areaDebug;addRow('📐 Layout จำลอง',sdu.layout+(sdu.rotated?' 🔄':''),'แผ่น '+sdu.sheet_w*100+'×'+sdu.sheet_h*100+' ซม. | gap '+Math.round(S.gap*1000)+' มม.');addRow('แผ่นที่เบิก',sdu.sheets_ceil+' แผ่น',sdu.usable?'เศษคืนสต็อก':'เศษขยะ');addRow('ต้นทุนวัสดุคิดจาก',fmt(area)+' ตร.ม.',null,'result-row--accent');}
+  if(areaResult.mode==='roll'&&areaDebug){var rd=areaDebug;addRow('🎞️ Layout ม้วน',rd.cols+' ชิ้น/แถว × '+rd.rows+' แถว','ม้วนกว้าง '+rd.roll_w*100+' ซม.');addRow('พื้นที่เรียกเก็บ',fmt(area)+' ตร.ม.','incl. waste','result-row--accent');}
+  addRow('ต้นทุนวัสดุ',fmt(matCost)+' บาท',Math.round(S.item.mat)+' บ./ตร.ม. × '+fmt(matArea)+' ตร.ม.');
+  addRow('ค่าพิมพ์'+(doubleSidedActive?' (2 ด้าน)':''),fmt(printCost)+' บาท',printDesc);
+  if(lamCost>0)addRow('ฟิล์มเคลือบ',fmt(lamCost)+' บาท',LAM_PRICE[S.lam]+' บ./ตร.ม.');
+  addRow('รวมต้นทุน',fmt(costBase)+' บาท',null,'result-row--accent');
+  if(S.setup>0)addRow('ค่า Setup',fmt(S.setup)+' บาท');if(S.design>0)addRow('ค่าออกแบบ',fmt(S.design)+' บาท');if(S.install>0)addRow('ค่าติดตั้ง/ส่ง',fmt(S.install)+' บาท');
+  if(extraFixed>0)addRow('รวมค่าคงที่',fmt(extraFixed)+' บาท',null,'result-row--accent');
+  addRow('ต้นทุนรวม',fmt(totalCost)+' บาท',null,'result-row--big');
+  if(S.rush)addRow('งานด่วน +25%','+'+fmt(rushAdd)+' บาท');
+  var tierLbl=(S.override?'Custom':'Auto '+tier.label)+' ratio '+ratio+' → ทุน ÷ '+ratio;
+  addRow('Cost Ratio',fmt(rawSell)+' บาท',tierLbl,'result-row--accent');
+  if(S.vat)addRow('VAT 7%','+'+fmt(vatAmt)+' บาท');
+  if(minPieceAdjust>0)addRow('บวกขั้นต่ำ '+minPiece+' บ./ชิ้น','+'+fmtR(minPieceAdjust)+' บาท',null,'result-row--warn');
+
+  var metaParts=[fmt(finalPrice/area)+' บ./ตร.ม.'];
+  if(pcs>0)metaParts.push(fmt(finalPrice/pcs)+' บ./ชิ้น');
+  metaParts.push('ratio '+ratio+(S.override?' (custom)':' ('+tier.label+')'));
+  var roundNote=(Math.abs(rawTotal-finalPrice)>0.5)?'<div class="result-final__rounded">ปัดจาก '+fmt(rawTotal)+' บาท</div>':'';
+  var showPerPiece=pcs>0,vatLabel=S.vat?' (รวม VAT)':'',priceHTML;
+  if(showPerPiece){priceHTML='<div class="result-final__prices"><div class="result-final__price-block"><div class="result-final__block-label">ราคาต่อชิ้น'+vatLabel+'</div><div class="result-final__amount result-final__amount--sub">'+fmtR(Math.ceil(pricePerPiece))+'<span>บาท</span></div></div><div class="result-final__price-block"><div class="result-final__block-label">ราคารวม ('+pcs+' ชิ้น)'+vatLabel+'</div><div class="result-final__amount">'+fmtR(finalPrice)+'<span>บาท</span></div></div></div>';}
+  else priceHTML='<div class="result-final__prices" style="grid-template-columns:1fr"><div class="result-final__price-block"><div class="result-final__block-label">ราคาขายสุทธิ'+vatLabel+'</div><div class="result-final__amount">'+fmtR(finalPrice)+'<span>บาท</span></div></div></div>';
+  document.getElementById('resultFinal').innerHTML=priceHTML+roundNote+'<div class="result-final__meta">'+metaParts.join(' &nbsp;·&nbsp; ')+'</div>';
+
+  buildWastePanel(areaResult,S.unit,S.pcs,S.pw,S.ph,S.gap);
+  if(areaResult.mode==='sheet_unified'&&areaResult.debug)drawLayoutCanvas(areaResult.debug,(S.qtyMode==='piece'?S.pcs:1));
+  else{var lp=document.getElementById('layoutPanel');if(lp)lp.style.display='none';}
+  show('resultPanel');
+}
+
+function init(){
+  buildCats();
+  document.getElementById('itemSelect').addEventListener('change',function(){selectItem(this.value);});
+  document.getElementById('inkSelect').addEventListener('change',function(){S.ink=this.value;recalc();});
+  document.getElementById('lamSelect').addEventListener('change',function(){S.lam=this.value;recalc();});
+  var dsChk=document.getElementById('chk-doublesided'),dsMChk=document.getElementById('chk-doublesided-mount');
+  if(dsChk)dsChk.addEventListener('change',function(){S.doublesided=this.checked;recalc();});
+  if(dsMChk)dsMChk.addEventListener('change',function(){S.doublesided=this.checked;recalc();});
+  var numMap={'inp-w':'w','inp-h':'h','inp-pcs':'pcs','inp-pw':'pw','inp-ph':'ph','inp-setup':'setup','inp-design':'design','inp-install':'install'};
+  Object.keys(numMap).forEach(function(id){var el=document.getElementById(id);if(!el)return;el.addEventListener('input',function(){S[numMap[id]]=parseFloat(this.value)||0;recalc();});});
+  ['inp-w','inp-h','inp-pw','inp-ph'].forEach(function(id){var el=document.getElementById(id);if(!el)return;el.addEventListener('blur',function(){if(this.value!==''){var dec=(S.unit==='m')?3:(S.unit==='cm'?1:2);this.value=parseFloat(this.value).toFixed(dec);}});});
+  var gapEl=document.getElementById('inp-gap');if(gapEl)gapEl.addEventListener('input',function(){S.gap=(parseFloat(this.value)||5)/1000;recalc();});
+  var bleedEl=document.getElementById('inp-bleed');if(bleedEl)bleedEl.addEventListener('input',function(){S.bleed=(parseFloat(this.value)||0)/100;recalc();});
+  document.getElementById('inp-ratio').addEventListener('input',function(){S.customRatio=parseFloat(this.value)||0.50;recalc();});
+  document.getElementById('chk-rush').addEventListener('change',function(){S.rush=this.checked;recalc();});
+  document.getElementById('chk-vat').addEventListener('change',function(){S.vat=this.checked;recalc();});
+  document.getElementById('chk-override').addEventListener('change',function(){S.override=this.checked;document.getElementById('overrideBox').classList.toggle('calc-override--hidden',!this.checked);recalc();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════
+     CALCULATOR 2 SCRIPT (Sticker Layout)
+══════════════════════════════════════════════════ -->
+<script>
+(function(){
+  var paperPresets={
+    a5:{width:14.8,height:21,bleed:1.5},
+    a4:{width:21,height:29.7,bleed:1.5},
+    a3:{width:29.7,height:42,bleed:2.54},
+    a3plus:{width:33,height:48.3,bleed:2.54}
+  };
+  var layoutModes=['แนวนอนทั้งหมด','แนวตั้งทั้งหมด','แนวนอน + แนวตั้งในพื้นที่เหลือ (กว้าง)','แนวนอน + แนวตั้งในพื้นที่เหลือ (สูง)','แนวตั้ง + แนวนอนในพื้นที่เหลือ (กว้าง)','แนวตั้ง + แนวนอนในพื้นที่เหลือ (สูง)'];
+  var best={count:0,mode:0,tiles:[]},ctxCalc=null;
+
+  function $id(id){return document.getElementById(id);}
+  function val(id){return parseFloat($id(id).value||'0')||0;}
+  function fmt2(n){return '฿'+(Number.isFinite(n)?n:0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function getMode(){var r=document.querySelector('input[name="sc-mode"]:checked');return r?r.value:'perSticker';}
+  function ceil(v){return Math.ceil(v);}
+  function roundUp(v,step){if(!step||step==='none')return v;var s=parseFloat(step)||0;return s?Math.ceil(v/s)*s:v;}
+
+  // Layout modes
+  function tiles(cols,rows,tW,tH,sW,sH,isV,offX,offY){offX=offX||0;offY=offY||0;var out=[];for(var r=0;r<rows;r++)for(var c=0;c<cols;c++)out.push({x:offX+c*tW,y:offY+r*tH,width:sW,height:sH,isVertical:isV});return out;}
+  function mode1(uw,uh,tW,tH,sW,sH){var c=Math.floor(uw/tW),r=Math.floor(uh/tH);return{mode:0,count:c*r,tiles:tiles(c,r,tW,tH,sW,sH,false)};}
+  function mode2(uw,uh,tW,tH,sW,sH){var c=Math.floor(uw/tH),r=Math.floor(uh/tW);return{mode:1,count:c*r,tiles:tiles(c,r,tH,tW,sH,sW,true)};}
+  function mode3(uw,uh,tW,tH,sW,sH){var hC=Math.floor(uw/tW),hR=Math.floor(uh/tH),hN=hC*hR,remW=uw-hC*tW,vC=Math.floor(remW/tH),vR=Math.floor(uh/tW),vN=vC*vR;return{mode:2,count:hN+vN,tiles:[...tiles(hC,hR,tW,tH,sW,sH,false),...tiles(vC,vR,tH,tW,sH,sW,true,hC*tW)]};}
+  function mode4(uw,uh,tW,tH,sW,sH){var hC=Math.floor(uw/tW),hR=Math.floor(uh/tH),hN=hC*hR,remH=uh-hR*tH,vC=Math.floor(uw/tH),vR=Math.floor(remH/tW),vN=vC*vR;return{mode:3,count:hN+vN,tiles:[...tiles(hC,hR,tW,tH,sW,sH,false),...tiles(vC,vR,tH,tW,sH,sW,true,0,hR*tH)]};}
+  function mode5(uw,uh,tW,tH,sW,sH){var vC=Math.floor(uw/tH),vR=Math.floor(uh/tW),vN=vC*vR,remW=uw-vC*tH,hC=Math.floor(remW/tW),hR=Math.floor(uh/tH),hN=hC*hR;return{mode:4,count:vN+hN,tiles:[...tiles(vC,vR,tH,tW,sH,sW,true),...tiles(hC,hR,tW,tH,sW,sH,false,vC*tH)]};}
+  function mode6(uw,uh,tW,tH,sW,sH){var vC=Math.floor(uw/tH),vR=Math.floor(uh/tW),vN=vC*vR,remH=uh-vR*tW,hC=Math.floor(uw/tW),hR=Math.floor(remH/tH),hN=hC*hR;return{mode:5,count:vN+hN,tiles:[...tiles(vC,vR,tH,tW,sH,sW,true),...tiles(hC,hR,tW,tH,sW,sH,false,0,vR*tW)]};}
+
+  function calculate(){
+    var pW=val('sc-paper-w'),pH=val('sc-paper-h'),sW=val('sc-sticker-w'),sH=val('sc-sticker-h'),spacing=val('sc-spacing'),bleed=val('sc-bleed');
+    var canvas=$id('sc-canvas'),ctx=canvas.getContext('2d');
+
+    if(pW<=0||pH<=0||sW<=0||sH<=0){
+      $id('sc-count-per-sheet').textContent='0';$id('sc-sheet-area').textContent='0.0000';$id('sc-efficiency').textContent='0%';$id('sc-optimal-layout').textContent='—';
+      ctx.clearRect(0,0,canvas.width,canvas.height);calcCost();return;
+    }
+    var usableW=pW-2*bleed,usableH=pH-2*bleed;
+    if(usableW<=0||usableH<=0){ctx.clearRect(0,0,canvas.width,canvas.height);calcCost();return;}
+    var tileW=sW+spacing,tileH=sH+spacing;
+    var results=[mode1,mode2,mode3,mode4,mode5,mode6].map(function(fn){return fn(usableW,usableH,tileW,tileH,sW,sH);});
+    best=results.reduce(function(m,c){return c.count>m.count?c:m;},{count:0,mode:0,tiles:[]});
+    var eff=(sW*sH*best.count)/(usableW*usableH)*100;
+    $id('sc-count-per-sheet').textContent=best.count;
+    $id('sc-sum-cps').textContent=best.count;
+    $id('sc-sheet-area').textContent=((usableW*usableH)/10000).toFixed(4);
+    $id('sc-efficiency').textContent=isFinite(eff)?eff.toFixed(1)+'%':'0%';
+    $id('sc-optimal-layout').textContent=layoutModes[best.mode]||'—';
+    ctxCalc={pW:pW,pH:pH,bleed:bleed,usableW:usableW,usableH:usableH,sW:sW,sH:sH};
+    drawPreview(pW,pH,bleed,best.tiles,usableW,usableH,ctx,canvas);
+    calcCost();
+  }
+
+  function drawPreview(pW,pH,bleed,tilesArr,uw,uh,ctx,canvas){
+    var pad=12;
+    // Resize canvas to actual display size
+    var displayW=canvas.parentElement.clientWidth||400;
+    var displayH=Math.max(220,Math.round(displayW*(pH/pW)*0.85));
+    var dpr=window.devicePixelRatio||1;
+    canvas.width=Math.round(displayW*dpr);canvas.height=Math.round(displayH*dpr);
+    canvas.style.width=displayW+'px';canvas.style.height=displayH+'px';
+    ctx.scale(dpr,dpr);
+
+    var scaleX=(displayW-pad*2)/pW,scaleY=(displayH-pad*2)/pH,scale=Math.min(scaleX,scaleY);
+    var spW=pW*scale,spH=pH*scale,ox=(displayW-spW)/2,oy=(displayH-spH)/2;
+
+    ctx.clearRect(0,0,displayW,displayH);
+
+    // Sheet background
+    ctx.fillStyle='#f8fafc';ctx.fillRect(ox,oy,spW,spH);
+    ctx.strokeStyle='#94a3b8';ctx.lineWidth=1.5;ctx.strokeRect(ox,oy,spW,spH);
+
+    // Bleed line
+    if(bleed>0){var b=bleed*scale;ctx.strokeStyle='#ef4444';ctx.lineWidth=1;ctx.setLineDash([5,3]);ctx.strokeRect(ox+b,oy+b,spW-2*b,spH-2*b);ctx.setLineDash([]);}
+
+    // Stickers
+    tilesArr.forEach(function(t){
+      var tx=ox+bleed*scale+t.x*scale,ty=oy+bleed*scale+t.y*scale,tw=t.width*scale,th=t.height*scale;
+      ctx.fillStyle=t.isVertical?'rgba(99,102,241,0.75)':'rgba(79,70,229,0.85)';
+      if(ctx.roundRect){ctx.beginPath();ctx.roundRect(tx,ty,tw,th,Math.min(3,tw*0.1));ctx.fill();}else ctx.fillRect(tx,ty,tw,th);
+      ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=0.5;ctx.strokeRect(tx,ty,tw,th);
+    });
+
+    // Legend
+    var fontSize=Math.max(10,Math.min(13,Math.round(spW*0.04)));
+    ctx.fillStyle='#64748b';ctx.font=fontSize+'px sans-serif';ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillText(pW+'×'+pH+' ซม. | ชิ้น '+sW+'×'+sH+'ซม. | '+tilesArr.length+' ดวง/แผ่น',ox+2,oy+spH+4);
+  }
+
+  function calcCost(){
+    var cps=best.count||0;
+    var desiredQty=val('sc-desired-qty'),desiredSheets=val('sc-desired-sheets');
+    var sheetsForQty=cps>0?ceil(desiredQty/cps):0,stickersFromSheets=cps*desiredSheets;
+    $id('sc-sheets-for-qty').textContent=sheetsForQty;
+    $id('sc-stickers-from-sheets').textContent=stickersFromSheets;
+
+    var mode=getMode(),sheetsForCalc=desiredSheets>0?desiredSheets:sheetsForQty;
+    var pricePerSticker=val('sc-price-per-sticker'),pricePerSheet=val('sc-price-per-sheet'),pricePerSqm=val('sc-price-per-sqm'),laminatePerSqm=val('sc-laminate-per-sqm');
+    var diecutPerSticker=val('sc-diecut'),setupFee=val('sc-setup'),wastePctV=val('sc-waste'),vatPctV=val('sc-vat-pct')/100;
+    var areaBasis=($id('sc-area-basis')?$id('sc-area-basis').value:'usable'),vatIncluded=($id('sc-vat-included').value==='true');
+    var roundRule=$id('sc-round').value;
+
+    var subtotal=0,areaSqm=0;
+    var oneSheetSqm=0;
+    if(ctxCalc){var base=areaBasis==='usable'?(ctxCalc.usableW*ctxCalc.usableH):(ctxCalc.pW*ctxCalc.pH);oneSheetSqm=base/10000;areaSqm=oneSheetSqm*sheetsForCalc;}
+
+    if(mode==='perSticker') subtotal=desiredQty*pricePerSticker;
+    else if(mode==='perSheet') subtotal=sheetsForCalc*pricePerSheet;
+    else if(mode==='perSqm'){var printCost=areaSqm*pricePerSqm,lamCost=areaSqm*laminatePerSqm;subtotal=printCost+lamCost;}
+
+    var diecutPieces=desiredQty>0?desiredQty:stickersFromSheets;
+    subtotal+=diecutPerSticker*diecutPieces+setupFee;
+    if(wastePctV>0)subtotal=subtotal*(1+wastePctV/100);
+
+    var vat=0,grand=0;
+    if(vatIncluded){vat=subtotal-(subtotal/(1+vatPctV));grand=subtotal;}
+    else{vat=subtotal*vatPctV;grand=subtotal+vat;}
+
+    var beforeRound=grand;
+    grand=roundUp(grand,roundRule);
+
+    $id('sc-area-used').textContent=(areaSqm>0&&mode==='perSqm')?areaSqm.toFixed(4)+' ตร.ม.':'—';
+    $id('sc-subtotal').textContent=fmt2(subtotal);
+    $id('sc-vat-amount').textContent=fmt2(vat);
+
+    var deliveredStickers=desiredSheets>0?stickersFromSheets:desiredQty;
+    var effSticker=deliveredStickers>0?(grand/deliveredStickers):0;
+    var effSqm=areaSqm>0?(grand/areaSqm):0;
+    $id('sc-eff-per-sticker').textContent=fmt2(effSticker);
+    $id('sc-eff-per-sqm').textContent=fmt2(effSqm);
+
+    // Per sqm per layout
+    var perSqmLayout=0;
+    if(ctxCalc&&cps>0&&oneSheetSqm>0){
+      var sheetCost=0;
+      if(mode==='perSticker')sheetCost=cps*pricePerSticker;
+      else if(mode==='perSheet')sheetCost=pricePerSheet;
+      else if(mode==='perSqm')sheetCost=oneSheetSqm*(pricePerSqm+laminatePerSqm);
+      sheetCost+=cps*diecutPerSticker;
+      if(wastePctV>0)sheetCost*=(1+wastePctV/100);
+      if(!vatIncluded)sheetCost*=(1+vatPctV);
+      perSqmLayout=sheetCost/oneSheetSqm;
+    }
+    $id('sc-eff-per-sqm-layout').textContent=fmt2(perSqmLayout);
+
+    // Grand total
+    var grandEl=$id('sc-grand');
+    grandEl.innerHTML=Math.round(grand).toLocaleString('th-TH')+'<span>บาท</span>';
+    var roundNote=$id('sc-round-note');
+    if(Math.abs(beforeRound-grand)>0.5)roundNote.textContent='ปัดจาก '+fmt2(beforeRound);
+    else roundNote.textContent='';
+  }
+
+  function bindAll(){
+    // Paper size select
+    $id('sc-paper-size').addEventListener('change',function(){
+      var p=paperPresets[this.value];
+      if(p){$id('sc-paper-w').value=p.width;$id('sc-paper-h').value=p.height;$id('sc-bleed').value=p.bleed;}
+      calculate();
+    });
+    ['sc-paper-w','sc-paper-h','sc-sticker-w','sc-sticker-h','sc-spacing','sc-bleed'].forEach(function(id){
+      $id(id).addEventListener('input',calculate);
+    });
+    ['sc-desired-qty','sc-desired-sheets','sc-price-per-sticker','sc-price-per-sheet','sc-price-per-sqm','sc-laminate-per-sqm','sc-diecut','sc-setup','sc-waste','sc-vat-pct'].forEach(function(id){
+      $id(id).addEventListener('input',calcCost);
+    });
+    ['sc-area-basis','sc-vat-included','sc-round'].forEach(function(id){
+      $id(id).addEventListener('change',calcCost);
+    });
+    document.querySelectorAll('input[name="sc-mode"]').forEach(function(r){r.addEventListener('change',calcCost);});
+
+    // Redraw canvas on resize
+    window.addEventListener('resize',function(){if(ctxCalc&&best.tiles.length>0){var canvas=$id('sc-canvas');drawPreview(ctxCalc.pW,ctxCalc.pH,ctxCalc.bleed,best.tiles,ctxCalc.usableW,ctxCalc.usableH,canvas.getContext('2d'),canvas);}});
+  }
+
+  // Expose for tab switch redraw
+  window.scCalc={calculate:calculate};
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){bindAll();calculate();});
+  else{bindAll();calculate();}
+})();
+</script>
+
+
+<!-- ══════════════════════════════════════════════════
+     CALCULATOR 3 SCRIPT (Signage Calculator)
+══════════════════════════════════════════════════ -->
+<script>
+(function(){
+  function $id(id){return document.getElementById(id);}
+  function num(v){var n=parseFloat(v);return isNaN(n)?0:n;}
+  function fmtTHB(v){return '฿'+Number(v||0).toLocaleString('th-TH',{maximumFractionDigits:0});}
+  function avg(a,b){return(num(a)+num(b))/2;}
+
+  function applyPreset(p){
+    var ib=$id('sg-install_base');
+    if(p==='metal_in'||p==='metal_out'){if(ib)ib.value=4500;}
+    if(p==='channel_in'){if(ib)ib.value=6000;}
+    if(p==='channel_out'){if(ib)ib.value=6000;}
+    if(p==='lb_in'){if(ib)ib.value=4500;}
+    if(p==='lb_out'){if(ib)ib.value=6000;}
+    render();
+  }
+  $id('sg-preset').addEventListener('change',function(){applyPreset(this.value);});
+
+  function deriveArea(){
+    var wM=num($id('sg-w').value)/100, hM=num($id('sg-h').value)/100;
+    if(wM>0&&hM>0)return wM*hM;
+    var base=num($id('sg-metalCost').value), unit=num($id('sg-metal_unit_cost').value);
+    return(base>0&&unit>0)?base/unit:0;
+  }
+  function getSizeTier(A){
+    var b=($id('sg-size_breaks').value||'0.5,1,3,8').split(',').map(function(x){return num(x.trim());}).filter(function(x){return x>0;});
+    if(A<=b[0])return 0; if(A<=b[1])return 1; if(A<=b[2])return 2; if(A<=b[3])return 3; return 4;
+  }
+  function heightMult(hm){
+    var p=($id('sg-height_mults').value||'1.0,1.2,1.4,1.8').split(',').map(function(x){return num(x.trim());});
+    if(hm<=3)return p[0]||1.0; if(hm<=6)return p[1]||1.2; if(hm<=10)return p[2]||1.4; return p[3]||1.8;
+  }
+  function sizeMultBase(A){
+    var breaks=($id('sg-size_breaks').value||'0.5,1,3,8').split(',').map(function(x){return num(x.trim());}).filter(function(x){return x>0;});
+    var mults=($id('sg-size_mults').value||'0.95,1.15,1.30,1.45,1.80').split(',').map(function(x){return num(x.trim());});
+    while(mults.length<5)mults.push(mults[mults.length-1]||1);
+    for(var i=0;i<breaks.length;i++){if(A<=breaks[i])return mults[i]||1;}
+    return mults[4]||1;
+  }
+  function roundPositive(v,tier){
+    v=Math.max(0,v); var k=Math.floor(v/1000), rem=v-k*1000;
+    var steps=tier<=0?[200,500,800,1000]:tier===1?[300,600,900,1000]:tier===2?[500,1000]:[1000];
+    var target=steps[steps.length-1];
+    for(var i=0;i<steps.length;i++){if(rem<=steps[i]){target=steps[i];break;}}
+    return k*1000+target;
+  }
+  function roundDownStep(v,step){var s=num(step);return s?Math.floor(v/s)*s:v;}
+  function roundUpStep(v,step){var s=num(step);return s?Math.ceil(v/s)*s:v;}
+  function finalPosStep(step,tier){var minByTier=[0,200,500,1000,1000][tier]||0;return Math.max(num(step)||0,minByTier);}
+
+  function billAreaByRoll(w_cm,h_cm){
+    var RW=Math.max(1,num($id('sg-roll_width_cm').value)||126), EDGE=Math.max(0,num($id('sg-edge_margin_cm').value)||0), OL=Math.max(0,num($id('sg-panel_overlap_cm').value)||0);
+    var w_need=w_cm+EDGE, panels=Math.max(1,Math.ceil(w_need/RW));
+    var panel_w=Math.min(RW,w_need), total_w_billed=panels*panel_w+(panels-1)*OL;
+    var area_m2=(total_w_billed/100)*(h_cm/100);
+    return{panels:panels,billed_w_cm:total_w_billed,area_m2:area_m2};
+  }
+
+  function smallJobPrice(area,rate,minArea,minBaht,microTh,microRate){
+    var billArea=Math.max(area,Math.max(0,minArea));
+    var usingMicro=(billArea<=Math.max(0,microTh)&&num(microRate)>0);
+    var effRate=usingMicro?Math.max(rate,num(microRate)):rate;
+    var raw=billArea*effRate, sell=Math.max(raw,Math.max(0,minBaht));
+    var usedMinArea=billArea>area+1e-9, usedMinBaht=sell>raw+1e-9;
+    var badges='<div class="sg-badges">'+
+      (usedMinArea?'<span class="sg-badge ok">min_area</span>':'')+
+      (usingMicro?'<span class="sg-badge ok">micro_rate</span>':'')+
+      (usedMinBaht?'<span class="sg-badge ok">min_baht</span>':'')+
+    '</div>';
+    return{sell:sell,raw:raw,billArea:billArea,effRate:effRate,badges:badges};
+  }
+
+  function calcPaint(A,env){
+    if(!$id('sg-hasPaint').checked)return{label:'',sell:0,detail:''};
+    var colors=Math.max(1,Math.floor(num($id('sg-paint_colors').value)||1));
+    var extra=num($id('sg-paint_color_extra').value)/100, colorF=1+Math.max(0,colors-1)*extra;
+    var isOut=(env==='outdoor'||$id('sg-preset').value.endsWith('_out'));
+    var base=isOut?num($id('sg-paint_job_out').value):num($id('sg-paint_job_in').value);
+    var rate=isOut?num($id('sg-paint_area_out').value):num($id('sg-paint_area_in').value);
+    var add=A*rate*colorF, tier=getSizeTier(A);
+    var m=($id('sg-paint_size_mults').value||'1.00,1.05,1.10,1.18,1.25').split(',').map(function(x){return num(x.trim());});
+    var sizeF=m[Math.min(tier,m.length-1)]||1, sell=(base+add)*sizeF;
+    var detail='<ul><li>ฐานงาน: '+fmtTHB(base)+'</li><li>พื้นที่ '+A.toFixed(3)+' ตร.ม. × '+rate.toLocaleString()+' × ตัวคูณสี '+colorF.toFixed(2)+' = '+fmtTHB(add)+'</li><li>ตัวคูณขนาด = x'+sizeF.toFixed(2)+'</li></ul>';
+    return{label:isOut?'สี 2K (Outdoor)':'ทำสีอุตสาหกรรม (Indoor)',sell:sell,detail:detail};
+  }
+
+  function calcSticker(){
+    if(!$id('sg-hasSticker').checked)return{label:'สติ๊กเกอร์',sell:0,detail:''};
+    var w_cm=num($id('sg-w').value), h_cm=num($id('sg-h').value);
+    var roll=billAreaByRoll(w_cm,h_cm);
+    var c=smallJobPrice(roll.area_m2,num($id('sg-sticker_sqm').value),num($id('sg-sticker_min_area').value),num($id('sg-sticker_min_baht').value),num($id('sg-sticker_micro_th').value),num($id('sg-sticker_micro_rate').value));
+    var detail='<ul><li>คิดตามม้วน: '+roll.billed_w_cm.toFixed(1)+'×'+h_cm+' ซม. → '+roll.area_m2.toFixed(3)+' ตร.ม. (พาเนล '+roll.panels+')</li></ul>'+c.badges+'<ul><li>พท.คิดราคา = '+c.billArea.toFixed(3)+' ตร.ม. × '+c.effRate.toLocaleString()+' = '+fmtTHB(c.raw)+'</li></ul>';
+    return{label:'สติ๊กเกอร์',sell:c.sell,detail:detail};
+  }
+
+  function calcAcrylicLB(A){
+    if(!$id('sg-hasAcrylic').checked)return{label:'แผ่นอะคริลิก',sell:0,detail:''};
+    var c=smallJobPrice(A,num($id('sg-acrylic_lb_sqm').value),num($id('sg-acrylic_lb_min_area').value),num($id('sg-acrylic_lb_min_baht').value),num($id('sg-acrylic_lb_micro_th').value),num($id('sg-acrylic_lb_micro_rate').value));
+    var detail=c.badges+'<ul><li>พท.คิดราคา = '+c.billArea.toFixed(3)+' ตร.ม. × '+c.effRate.toLocaleString()+' = '+fmtTHB(c.raw)+'</li></ul>';
+    return{label:'แผ่นอะคริลิก (Lightbox)',sell:c.sell,detail:detail};
+  }
+  function calcAcrylicCH(A){
+    if(!$id('sg-hasAcrylic').checked)return{label:'แผ่นอะคริลิก',sell:0,detail:''};
+    var eff=Math.max(0.1,Math.min(1,num($id('sg-ch_eff').value))), Aeff=A*eff;
+    var c=smallJobPrice(Aeff,num($id('sg-acrylic_ch_sqm').value),num($id('sg-acrylic_ch_min_area').value),num($id('sg-acrylic_ch_min_baht').value),num($id('sg-acrylic_ch_micro_th').value),num($id('sg-acrylic_ch_micro_rate').value));
+    var detail='<ul><li>พท.ไฟจริง: '+A.toFixed(3)+'×'+eff+' = '+Aeff.toFixed(3)+' ตร.ม.</li></ul>'+c.badges+'<ul><li>พท.คิดราคา = '+c.billArea.toFixed(3)+' ตร.ม. × '+c.effRate.toLocaleString()+' = '+fmtTHB(c.raw)+'</li></ul>';
+    return{label:'แผ่นอะคริลิก (CH)',sell:c.sell,detail:detail};
+  }
+
+  function calcVinyl(A,jobKind){
+    if(!$id('sg-hasVinyl').checked)return{label:'แผ่นไวนิล',sell:0,detail:''};
+    var w_cm=num($id('sg-w').value), h_cm=num($id('sg-h').value);
+    var roll=billAreaByRoll(w_cm,h_cm);
+    var eff=(jobKind==='lightbox')?1:Math.max(0.1,Math.min(1,num($id('sg-ch_eff').value)));
+    var billA=roll.area_m2*eff;
+    var c=smallJobPrice(billA,num($id('sg-vinyl_sqm').value),num($id('sg-vinyl_min_area').value),num($id('sg-vinyl_min_baht').value),num($id('sg-vinyl_micro_th').value),num($id('sg-vinyl_micro_rate').value));
+    var detail='<ul><li>คิดตามม้วน → '+roll.area_m2.toFixed(3)+' ตร.ม.'+(eff!==1?' (×'+eff+' พท.ไฟ)':'')+'</li></ul>'+c.badges+'<ul><li>พท.คิดราคา = '+c.billArea.toFixed(3)+' × '+c.effRate.toLocaleString()+' = '+fmtTHB(c.raw)+'</li></ul>';
+    return{label:'แผ่นไวนิล',sell:c.sell,detail:detail};
+  }
+
+  function calcLight(jobKind,env,A){
+    if(jobKind==='metal_letter')return{label:'ระบบไฟ',sell:0,detail:'',watt:0,psu:0};
+    var eff=Math.max(0.1,Math.min(1,num($id('sg-ch_eff').value)));
+    var Aeff=(jobKind==='lightbox')?A:A*eff;
+    var wpsqm=(jobKind==='lightbox')?avg($id('sg-lb_w_min').value,$id('sg-lb_w_max').value):avg($id('sg-ch_w_min').value,$id('sg-ch_w_max').value);
+    var totalW=Aeff*wpsqm, psuW=Math.max(1,num($id('sg-psu_watt').value)), psuCount=Math.ceil(totalW/psuW);
+    var isOut=(env==='outdoor'||$id('sg-preset').value.endsWith('_out')), psuPrice=isOut?num($id('sg-psu_out').value):num($id('sg-psu_in').value);
+    var panelPack=Aeff*1500, sell=psuCount*psuPrice+panelPack;
+    var detail='<ul><li>พท.คิดไฟ = '+Aeff.toFixed(3)+' ตร.ม. × '+wpsqm.toFixed(0)+' W/ตร.ม. = '+Math.round(totalW)+' W</li><li>PSU '+psuW+'W → '+psuCount+' ตัว × '+psuPrice.toLocaleString()+' = '+fmtTHB(psuCount*psuPrice)+'</li><li>โมดูล/แถบไฟ = '+Aeff.toFixed(3)+' × 1,500 = '+fmtTHB(panelPack)+'</li></ul>';
+    return{label:'ระบบไฟ (PSU+โมดูล)',sell:sell,detail:detail,watt:totalW,psu:psuCount};
+  }
+
+  function calcSteel(){
+    if(!$id('sg-hasSteel').checked)return{label:'โครงเหล็ก',sell:0,detail:''};
+    var w=num($id('sg-steel_w').value)||num($id('sg-w').value), h=num($id('sg-steel_h').value)||num($id('sg-h').value);
+    var As=(w/100)*(h/100), tier=getSizeTier(As);
+    var arr=($id('sg-steel_rates').value||'2000,1500,1200').split(',').map(function(x){return num(x.trim());});
+    var rate=(tier<=2)?arr[0]:(tier===3?arr[1]:arr[2]);
+    var sell=As*rate;
+    var detail='<ul><li>'+w+'×'+h+' ซม. → '+As.toFixed(3)+' ตร.ม. × '+rate.toLocaleString()+' = '+fmtTHB(sell)+'</li></ul>';
+    return{label:'โครงเหล็กรับหลัง',sell:sell,detail:detail};
+  }
+
+  function calcComposite(){
+    if(!$id('sg-hasComp').checked)return{label:'คอมโพสิต',sell:0,detail:''};
+    var w=num($id('sg-comp_w').value), h=num($id('sg-comp_h').value);
+    var A=(w>0&&h>0)?(w/100)*(h/100):0, rate=num($id('sg-comp_sqm').value), sell=A*rate;
+    var detail='<ul><li>'+w+'×'+h+' ซม. → '+A.toFixed(3)+' ตร.ม. × '+rate.toLocaleString()+' = '+fmtTHB(sell)+'</li></ul>';
+    return{label:'พื้นหลังคอมโพสิต',sell:sell,detail:detail};
+  }
+
+  function parseNine(s){
+    var arr=(s||'100,100,100,100,100,100,100,100,100').split(',').map(function(x){return num(x.trim());});
+    while(arr.length<9)arr.push(100);
+    return arr.slice(0,9);
+  }
+  function parseFive(s){
+    var arr=(s||'0,2,5,10,15').split(',').map(function(x){return num(x.trim());});
+    while(arr.length<5)arr.push(arr[arr.length-1]||0);
+    return arr.slice(0,5);
+  }
+
+  function buildRow(label,amtR,detailR,pill,amtP,detailP,noteR,noteP){
+    return '<details><summary class="sg-summary">'+
+      '<span class="sg-sum-left"><span class="sg-pill">'+pill+'</span><span>'+label+'</span></span>'+
+      '<span class="sg-amt-r">'+fmtTHB(amtR)+'</span>'+
+      '<span class="sg-amt-p">'+fmtTHB(amtP)+'</span>'+
+      '</summary>'+
+      '<div class="sg-detail-box"><div class="sg-compare">'+
+        '<div class="sg-col"><h5>Realistic</h5>'+(detailR||'')+(noteR?'<ul><li>'+noteR+'</li></ul>':'')+'</div>'+
+        '<div class="sg-col"><h5>Positive</h5>'+(detailP||detailR||'')+(noteP?'<ul><li>'+noteP+'</li></ul>':'')+'</div>'+
+      '</div></div></details>';
+  }
+
+  function render(){
+    var base=num($id('sg-metalCost').value);
+    var warn=$id('sg-warn');
+    if(base<=0){
+      warn.textContent='กรุณาใส่ต้นทุนโลหะ/กรอบโลหะก่อน';warn.style.display='block';
+      $id('sg-rows').innerHTML='';
+      $id('sg-total-real').textContent='฿0';$id('sg-total-pos').textContent='฿0';
+      $id('sg-power-note').textContent='Power Usage: 0 W';return;
+    }
+    warn.style.display='none';
+
+    var A=deriveArea(), tier=getSizeTier(A);
+    var preset=$id('sg-preset').value;
+    var jobKind=preset.startsWith('lb')?'lightbox':(preset.startsWith('channel')?'channel_letter':'metal_letter');
+    var env=preset.endsWith('_out')?'outdoor':'indoor';
+    var margin=Math.min(Math.max(num($id('sg-margin').value)/100,0),0.9);
+
+    var metalSell=base/(1-margin);
+    var metalDetail='<ul><li>ต้นทุนโลหะ = '+fmtTHB(base)+'</li><li>Margin = '+(margin*100).toFixed(0)+'%</li><li>ราคาขาย = '+fmtTHB(base)+' ÷ (1-'+margin.toFixed(2)+') = <b>'+fmtTHB(metalSell)+'</b></li></ul>';
+
+    var paintPack=calcPaint(A,env), stickerPack=calcSticker();
+    var acrylicPack=(jobKind==='lightbox')?calcAcrylicLB(A):calcAcrylicCH(A);
+    var vinylPack=calcVinyl(A,jobKind), lightPack=calcLight(jobKind,env,A);
+    var steelPack=calcSteel(), compPack=calcComposite();
+
+    var installPack=(function(){
+      var I0=num($id('sg-install_base').value), r=num($id('sg-install_per_sqm').value);
+      var eff=Math.max(0.1,Math.min(1,num($id('sg-ch_eff').value)));
+      var Aeff=(jobKind==='lightbox')?A:A*eff;
+      var H=heightMult(num($id('sg-height_m').value)), D=1+(num($id('sg-difficulty_pct').value)/100);
+      var Tbase=sizeMultBase(A), k=Math.max(1,num($id('sg-size_weight').value)||1), T=Math.pow(Tbase,k);
+      var crane=$id('sg-useCrane').checked?10000:0;
+      var baseV=I0+r*Aeff, withM=baseV*H*D*T, sell=withM+crane;
+      var detail='<ul><li>ฐาน = '+I0.toLocaleString()+' + ('+Aeff.toFixed(3)+' × '+r.toLocaleString()+') = '+fmtTHB(baseV)+'</li><li>H='+H+' D='+D.toFixed(2)+' T='+Tbase+'^'+k+' = '+T.toFixed(2)+'</li><li>เครน '+(crane?'+฿10,000':'—')+' → '+fmtTHB(sell)+'</li></ul>';
+      return{label:'ติดตั้ง',sell:sell,detail:detail};
+    })();
+
+    var itemsBase=[
+      {cat:'metal',   label:'ขายโลหะ',         baseAmt:metalSell,      detail:metalDetail,      pill:'โลหะ'},
+      ...(paintPack.sell>0   ?[{cat:'paint',   label:paintPack.label,   baseAmt:paintPack.sell,   detail:paintPack.detail,   pill:'สี'}]:[]),
+      ...(stickerPack.sell>0 ?[{cat:'sticker', label:'สติ๊กเกอร์',       baseAmt:stickerPack.sell, detail:stickerPack.detail, pill:'วัสดุ'}]:[]),
+      ...(acrylicPack.sell>0 ?[{cat:'acrylic', label:'แผ่นอะคริลิก',     baseAmt:acrylicPack.sell, detail:acrylicPack.detail, pill:'วัสดุ'}]:[]),
+      ...(vinylPack.sell>0   ?[{cat:'vinyl',   label:'แผ่นไวนิล',         baseAmt:vinylPack.sell,   detail:vinylPack.detail,   pill:'วัสดุ'}]:[]),
+      ...(steelPack.sell>0   ?[{cat:'steel',   label:'โครงเหล็กรับหลัง', baseAmt:steelPack.sell,   detail:steelPack.detail,   pill:'โครง'}]:[]),
+      ...(compPack.sell>0    ?[{cat:'comp',    label:'พื้นหลังคอมโพสิต', baseAmt:compPack.sell,    detail:compPack.detail,    pill:'พื้นหลัง'}]:[]),
+      ...(lightPack.sell>0   ?[{cat:'light',   label:'ระบบไฟ (PSU+โมดูล)',baseAmt:lightPack.sell,  detail:lightPack.detail,   pill:'ไฟ'}]:[]),
+      {cat:'install', label:'ติดตั้ง',           baseAmt:installPack.sell, detail:installPack.detail, pill:'แรงงาน'}
+    ];
+
+    var rf=parseNine($id('sg-mf_real_all').value), pf=parseNine($id('sg-mf_pos_all').value);
+    var uplifts=parseFive($id('sg-pos_size_uplifts').value), upliftPct=uplifts[Math.min(tier,uplifts.length-1)]||0;
+    var cat2idx={metal:0,paint:1,sticker:2,acrylic:3,vinyl:4,light:5,install:6,steel:7,comp:8};
+
+    var rows=[], realValues=[], posValues=[];
+    itemsBase.forEach(function(it){
+      var idx=cat2idx[it.cat]||0;
+      var realAdj=it.baseAmt*(rf[idx]||100)/100;
+      var posAdjBase=it.baseAmt*(pf[idx]||100)/100*(1+upliftPct/100);
+      var posAdj=roundPositive(posAdjBase,tier);
+      realValues.push(realAdj); posValues.push(posAdj);
+      var noteR='คูณ Realistic factor: x'+(rf[idx]||100).toFixed(0)+'% → '+fmtTHB(realAdj);
+      var noteP='คูณ Positive factor: x'+(pf[idx]||100).toFixed(0)+'% + uplift '+upliftPct+'% → '+fmtTHB(posAdjBase)+' → ปัด = '+fmtTHB(posAdj);
+      rows.push(buildRow(it.label,realAdj,it.detail,it.pill,posAdj,it.detail,noteR,noteP));
+    });
+
+    $id('sg-rows').innerHTML=rows.join('');
+
+    var rawReal=realValues.reduce(function(s,v){return s+v;},0);
+    var rawPos=posValues.reduce(function(s,v){return s+v;},0);
+    var step=num($id('sg-final_round_step').value);
+    var realTotal=roundDownStep(rawReal,step);
+    var posTotal=roundUpStep(rawPos,finalPosStep(step,tier));
+
+    $id('sg-total-real').textContent=fmtTHB(realTotal);
+    $id('sg-total-pos').textContent=fmtTHB(posTotal);
+    $id('sg-total-real-raw').textContent='ก่อนปัด: '+fmtTHB(rawReal);
+    $id('sg-total-pos-raw').textContent='ก่อนปัด: '+fmtTHB(rawPos);
+    $id('sg-power-note').textContent='Power Usage: '+Math.round(lightPack.watt)+' W'+(lightPack.psu?' • PSU: '+lightPack.psu+' ตัว':'');
+  }
+
+  // Collapsible factors
+  $id('sg-fx-toggle').addEventListener('click',function(){
+    var body=$id('sg-fx-body'), caret=$id('sg-fx-caret');
+    var show=body.style.display!=='block';
+    body.style.display=show?'block':'none';
+    caret.textContent=show?'▴':'▾';
+  });
+
+  // Toggle all details
+  $id('sg-toggle-all').addEventListener('click',function(){
+    var details=document.querySelectorAll('#sg-rows details');
+    var anyClosed=Array.from(details).some(function(d){return!d.open;});
+    details.forEach(function(d){d.open=anyClosed;});
+    $id('sg-toggle-all').textContent=anyClosed?'ซ่อนเบื้องหลังทั้งหมด':'แสดงเบื้องหลังทั้งหมด';
+  });
+
+  // Live bindings
+  document.querySelectorAll('#sg-form input, #sg-form select, #sg-fx-body input, #sg-fx-body select').forEach(function(e){
+    ['input','change'].forEach(function(ev){e.addEventListener(ev,render);});
+  });
+
+  applyPreset($id('sg-preset').value);
+  render();
+})();
+</script>
+</body>
+</html>

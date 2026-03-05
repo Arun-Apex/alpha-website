@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario-Like Platformer Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: url('background.png') repeat-x; background-size: cover; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const marioImg = new Image();
+        marioImg.src = 'mario.png';
+        
+        const turtleImg = new Image();
+        turtleImg.src = 'turtle.png';
+        
+        const pipeImg = new Image();
+        pipeImg.src = 'pipe.png';
+
+        class Player {
+            constructor() {
+                this.width = 50;
+                this.height = 50;
+                this.x = 100;
+                this.y = canvas.height - this.height - 10;
+                this.velocityY = 0;
+                this.speed = 5;
+                this.gravity = 0.5;
+                this.jumping = false;
+            }
+            moveLeft() { this.x -= this.speed; }
+            moveRight() { this.x += this.speed; }
+            jump() {
+                if (!this.jumping) {
+                    this.velocityY = -10;
+                    this.jumping = true;
+                }
+            }
+            update() {
+                this.y += this.velocityY;
+                this.velocityY += this.gravity;
+                if (this.y >= canvas.height - this.height - 10) {
+                    this.y = canvas.height - this.height - 10;
+                    this.jumping = false;
+                }
+            }
+            draw() {
+                ctx.drawImage(marioImg, this.x, this.y, this.width, this.height);
+            }
+        }
+
+        class Turtle {
+            constructor(x) {
+                this.width = 40;
+                this.height = 40;
+                this.x = x;
+                this.y = canvas.height - this.height - 10;
+                this.speed = 2;
+            }
+            update() {
+                this.x -= this.speed;
+                if (this.x < -this.width) this.x = canvas.width;
+            }
+            draw() {
+                ctx.drawImage(turtleImg, this.x, this.y, this.width, this.height);
+            }
+        }
+
+        class Pipe {
+            constructor(x) {
+                this.width = 60;
+                this.height = 80;
+                this.x = x;
+                this.y = canvas.height - this.height - 10;
+            }
+            draw() {
+                ctx.drawImage(pipeImg, this.x, this.y, this.width, this.height);
+            }
+        }
+
+        const player = new Player();
+        const turtles = [new Turtle(500), new Turtle(800)];
+        const pipes = [new Pipe(300), new Pipe(700)];
+
+        const keys = {};
+        window.addEventListener("keydown", (e) => { keys[e.key] = true; });
+        window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (keys["ArrowLeft"]) player.moveLeft();
+            if (keys["ArrowRight"]) player.moveRight();
+            if (keys[" "] || keys["ArrowUp"]) player.jump();
+
+            player.update();
+            player.draw();
+
+            turtles.forEach(turtle => {
+                turtle.update();
+                turtle.draw();
+            });
+            
+            pipes.forEach(pipe => {
+                pipe.draw();
+            });
+
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+    </script>
+</body>
+</html>

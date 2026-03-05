@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Production Status Board (Demo)</title>
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --panel: #0f1620;
+      --panel2:#0c121b;
+      --grid: rgba(255,255,255,.08);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --muted2: rgba(255,255,255,.45);
+      --accent: #00e5ff;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+
+      /* Status colors (edit these to match your ClickUp statuses) */
+      --st-queue: #374151;      /* gray */
+      --st-inprog: #f59e0b;     /* amber */
+      --st-waiting:#7c3aed;     /* purple */
+      --st-qc:     #22c55e;     /* green-ish */
+      --st-blocked:#ef4444;     /* red */
+      --st-done:   #10b981;     /* emerald */
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 15% -10%, rgba(0,229,255,.12), transparent 60%),
+                  radial-gradient(900px 500px at 90% 15%, rgba(124,58,237,.10), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      min-height:100vh;
+    }
+
+    .wrap{
+      padding: 22px 24px 26px;
+      max-width: 1700px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom: 16px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width: 280px;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(0,229,255,.9), rgba(124,58,237,.85));
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 40%);
+      transform: rotate(20deg);
+    }
+    .titleblock h1{
+      font-size: 20px;
+      letter-spacing:.12em;
+      margin:0;
+      text-transform:uppercase;
+    }
+    .titleblock .sub{
+      margin-top:2px;
+      font-size: 12px;
+      letter-spacing:.08em;
+      color: var(--muted);
+      text-transform:uppercase;
+    }
+
+    .controls{
+      display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      padding: 10px 12px;
+      border-radius: 999px;
+      display:flex; align-items:center; gap:10px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+    .pill label{
+      font-size:12px;
+      color: var(--muted);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .pill input, .pill select{
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 13px;
+      min-width: 210px;
+    }
+    .pill select option{ color:#111; }
+
+    .clock{
+      text-align:right;
+      min-width: 230px;
+    }
+    .clock .time{
+      font-size: 28px;
+      letter-spacing:.08em;
+      font-variant-numeric: tabular-nums;
+      margin:0;
+      line-height:1.05;
+    }
+    .clock .date{
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+
+    /* Summary row */
+    .summary{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 14px 0 16px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .card:before{
+      content:"";
+      position:absolute; inset:-1px;
+      background: radial-gradient(600px 220px at 20% 0%, rgba(0,229,255,.10), transparent 55%);
+      pointer-events:none;
+    }
+    .metric{
+      display:flex; align-items:baseline; justify-content:space-between;
+      gap:10px;
+    }
+    .metric .name{
+      font-size: 11px;
+      letter-spacing:.14em;
+      color: var(--muted);
+      text-transform:uppercase;
+    }
+    .metric .value{
+      font-size: 22px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing:.06em;
+    }
+    .metric .hint{
+      margin-top:6px;
+      font-size: 12px;
+      color: var(--muted2);
+      letter-spacing:.02em;
+    }
+
+    /* Table */
+    .board{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: calc(var(--radius) + 6px);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .thead, .row{
+      display:grid;
+      grid-template-columns: 150px 170px 170px 1.3fr 210px 240px;
+      align-items:center;
+    }
+
+    .thead{
+      background: rgba(255,255,255,.06);
+      border-bottom:1px solid rgba(255,255,255,.10);
+      padding: 12px 14px;
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .tbody{
+      max-height: calc(100vh - 270px);
+      overflow:auto;
+      scrollbar-color: rgba(255,255,255,.20) transparent;
+    }
+    .tbody::-webkit-scrollbar{ height:10px; width:10px; }
+    .tbody::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.18); border-radius: 999px; }
+    .tbody::-webkit-scrollbar-track{ background: transparent; }
+
+    .row{
+      padding: 12px 14px;
+      border-bottom:1px solid var(--grid);
+      background: rgba(0,0,0,.08);
+      position:relative;
+    }
+    .row:nth-child(even){ background: rgba(0,0,0,.03); }
+
+    .row.overdue{
+      outline: 2px solid rgba(239,68,68,.35);
+      outline-offset:-2px;
+      background: linear-gradient(90deg, rgba(239,68,68,.10), rgba(0,0,0,.03) 45%);
+    }
+
+    .job{
+      font-variant-numeric: tabular-nums;
+      letter-spacing:.08em;
+      font-weight: 700;
+    }
+    .customer{
+      color: rgba(255,255,255,.85);
+      letter-spacing:.04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .duedate{
+      font-variant-numeric: tabular-nums;
+    }
+    .process{
+      color: rgba(255,255,255,.88);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .statusWrap{
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap: 10px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      box-shadow: 0 0 0 4px rgba(255,255,255,.06);
+      flex:none;
+    }
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      white-space:nowrap;
+    }
+    .muted{
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .lastUpdate{
+      font-variant-numeric: tabular-nums;
+      color: rgba(255,255,255,.72);
+    }
+
+    /* Status theming via data-status */
+    .row[data-status="QUEUE"]        .statusPill{ background: color-mix(in srgb, var(--st-queue) 75%, #000 25%); }
+    .row[data-status="IN PROGRESS"]  .statusPill{ background: color-mix(in srgb, var(--st-inprog) 75%, #000 25%); color:#111; border-color: rgba(0,0,0,.15); }
+    .row[data-status="WAITING"]      .statusPill{ background: color-mix(in srgb, var(--st-waiting) 75%, #000 25%); }
+    .row[data-status="QC"]           .statusPill{ background: color-mix(in srgb, var(--st-qc) 75%, #000 25%); color:#0b0f14; border-color: rgba(0,0,0,.15); }
+    .row[data-status="BLOCKED"]      .statusPill{ background: color-mix(in srgb, var(--st-blocked) 80%, #000 20%); }
+    .row[data-status="COMPLETED"]    .statusPill{ background: color-mix(in srgb, var(--st-done) 75%, #000 25%); color:#0b0f14; border-color: rgba(0,0,0,.15); }
+
+    .row[data-status="QUEUE"]        .dot{ background: var(--st-queue); }
+    .row[data-status="IN PROGRESS"]  .dot{ background: var(--st-inprog); }
+    .row[data-status="WAITING"]      .dot{ background: var(--st-waiting); }
+    .row[data-status="QC"]           .dot{ background: var(--st-qc); }
+    .row[data-status="BLOCKED"]      .dot{ background: var(--st-blocked); }
+    .row[data-status="COMPLETED"]    .dot{ background: var(--st-done); }
+
+    /* Footer */
+    .footer{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top: 10px;
+      color: var(--muted2);
+      font-size: 12px;
+      letter-spacing:.06em;
+    }
+    .live{
+      display:flex; align-items:center; gap:8px;
+    }
+    .pulse{
+      width:10px;height:10px;border-radius:999px;background: var(--accent);
+      box-shadow: 0 0 0 0 rgba(0,229,255,.45);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse{
+      0%{ box-shadow: 0 0 0 0 rgba(0,229,255,.45); }
+      70%{ box-shadow: 0 0 0 10px rgba(0,229,255,0); }
+      100%{ box-shadow: 0 0 0 0 rgba(0,229,255,0); }
+    }
+
+    @media (max-width: 1100px){
+      .summary{ grid-template-columns: repeat(3, 1fr); }
+      .thead, .row{ grid-template-columns: 140px 160px 160px 1.2fr 200px 220px; }
+      .pill input{ min-width: 160px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div class="titleblock">
+          <h1>Production Status Board</h1>
+          <div class="sub">Demo Template • Signage Company Monitoring</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="pill">
+          <label for="search">Search</label>
+          <input id="search" placeholder="Job no / customer / process…" />
+        </div>
+
+        <div class="pill">
+          <label for="statusFilter">Status</label>
+          <select id="statusFilter">
+            <option value="ALL">All</option>
+            <option value="QUEUE">Queue</option>
+            <option value="IN PROGRESS">In Progress</option>
+            <option value="WAITING">Waiting</option>
+            <option value="QC">QC</option>
+            <option value="BLOCKED">Blocked</option>
+            <option value="COMPLETED">Completed</option>
+          </select>
+        </div>
+
+        <div class="pill">
+          <label for="sortBy">Sort</label>
+          <select id="sortBy">
+            <option value="due">Due date (soonest)</option>
+            <option value="status">Status (priority)</option>
+            <option value="updated">Last update (recent)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="clock">
+        <p class="time" id="clockTime">--:--:--</p>
+        <div class="date" id="clockDate">---</div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="board">
+      <div class="thead">
+        <div>Job No</div>
+        <div>Customer ID</div>
+        <div>Due Date</div>
+        <div>Process</div>
+        <div>Status</div>
+        <div>Last Update</div>
+      </div>
+      <div class="tbody" id="tbody"></div>
+    </div>
+
+    <div class="footer">
+      <div class="live"><span class="pulse"></span> LIVE (demo) • auto-refresh UI ready</div>
+      <div id="footerHint">Tip: Edit STATUS_COLORS and STATUS_ORDER in the script.</div>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // Demo data (replace later with your ClickUp API data)
+    // =========================
+    const demoJobs = [
+      { jobNo: "JOB-24018", customerId: "CUS-01872", dueDate: "2026-02-14", process: "Artwork → Proof → Approval", status: "WAITING", updatedAt: minutesAgo(18) },
+      { jobNo: "JOB-24021", customerId: "CUS-00411", dueDate: "2026-02-13", process: "Printing (UV) • Panel Set A", status: "IN PROGRESS", updatedAt: minutesAgo(6) },
+      { jobNo: "JOB-24022", customerId: "CUS-01409", dueDate: "2026-02-15", process: "Fabrication • Frame + Mount", status: "QUEUE", updatedAt: minutesAgo(55) },
+      { jobNo: "JOB-24023", customerId: "CUS-00177", dueDate: "2026-02-13", process: "QC • Pixel check + Brightness", status: "QC", updatedAt: minutesAgo(10) },
+      { jobNo: "JOB-24024", customerId: "CUS-00903", dueDate: "2026-02-12", process: "Install Prep • Packing + Label", status: "BLOCKED", updatedAt: minutesAgo(120) },
+      { jobNo: "JOB-24025", customerId: "CUS-00201", dueDate: "2026-02-16", process: "Programming • Player config + Test", status: "IN PROGRESS", updatedAt: minutesAgo(3) },
+      { jobNo: "JOB-24026", customerId: "CUS-00333", dueDate: "2026-02-12", process: "Dispatch • Delivery scheduling", status: "COMPLETED", updatedAt: minutesAgo(240) },
+      { jobNo: "JOB-24027", customerId: "CUS-02010", dueDate: "2026-02-14", process: "Content • Playlist build + Timing", status: "QUEUE", updatedAt: minutesAgo(42) },
+      { jobNo: "JOB-24028", customerId: "CUS-01555", dueDate: "2026-02-13", process: "Electrical • PSU + Wiring harness", status: "IN PROGRESS", updatedAt: minutesAgo(22) },
+      { jobNo: "JOB-24029", customerId: "CUS-00089", dueDate: "2026-02-12", process: "Issue Review • Awaiting parts", status: "WAITING", updatedAt: minutesAgo(95) },
+    ];
+
+    // =========================
+    // Status logic (edit to match your ClickUp statuses)
+    // =========================
+    const STATUS_ORDER = {
+      "BLOCKED": 1,
+      "IN PROGRESS": 2,
+      "WAITING": 3,
+      "QC": 4,
+      "QUEUE": 5,
+      "COMPLETED": 6
+    };
+
+    // Optional: if you want overdue highlighting even when status isn't blocked
+    function isOverdue(job) {
+      const due = new Date(job.dueDate + "T23:59:59");
+      const now = new Date();
+      return (job.status !== "COMPLETED") && (due < now);
+    }
+
+    // =========================
+    // Rendering
+    // =========================
+    const elBody = document.getElementById("tbody");
+    const elSummary = document.getElementById("summary");
+    const elSearch = document.getElementById("search");
+    const elFilter = document.getElementById("statusFilter");
+    const elSort = document.getElementById("sortBy");
+
+    function render() {
+      const q = (elSearch.value || "").trim().toLowerCase();
+      const statusFilter = elFilter.value;
+      const sortBy = elSort.value;
+
+      let items = demoJobs.slice();
+
+      // filter
+      if (statusFilter !== "ALL") {
+        items = items.filter(j => j.status === statusFilter);
+      }
+      if (q) {
+        items = items.filter(j => (
+          j.jobNo.toLowerCase().includes(q) ||
+          j.customerId.toLowerCase().includes(q) ||
+          j.process.toLowerCase().includes(q) ||
+          j.status.toLowerCase().includes(q)
+        ));
+      }
+
+      // sort
+      items.sort((a,b) => {
+        if (sortBy === "due") {
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        }
+        if (sortBy === "updated") {
+          return new Date(b.updatedAt) - new Date(a.updatedAt);
+        }
+        // status priority
+        const sa = STATUS_ORDER[a.status] ?? 999;
+        const sb = STATUS_ORDER[b.status] ?? 999;
+        if (sa !== sb) return sa - sb;
+        return new Date(a.dueDate) - new Date(b.dueDate);
+      });
+
+      // summary
+      const counts = countByStatus(demoJobs);
+      const overdueCount = demoJobs.filter(isOverdue).length;
+
+      elSummary.innerHTML = "";
+      elSummary.append(
+        metricCard("Total Jobs", demoJobs.length, "All active rows on the board"),
+        metricCard("In Progress", counts["IN PROGRESS"] || 0, "Currently being processed"),
+        metricCard("Waiting", counts["WAITING"] || 0, "Approval / parts / customer response"),
+        metricCard("Blocked", counts["BLOCKED"] || 0, "Needs attention"),
+        metricCard("Overdue", overdueCount, "Due date passed (not completed)"),
+        metricCard("Completed", counts["COMPLETED"] || 0, "Finished jobs (still visible)")
+      );
+
+      // rows
+      elBody.innerHTML = "";
+      for (const job of items) {
+        elBody.appendChild(row(job));
+      }
+    }
+
+    function row(job){
+      const r = document.createElement("div");
+      r.className = "row";
+      r.dataset.status = job.status;
+
+      if (isOverdue(job)) r.classList.add("overdue");
+
+      r.innerHTML = `
+        <div class="job">${escapeHtml(job.jobNo)}</div>
+        <div class="customer">${escapeHtml(job.customerId)}</div>
+        <div class="duedate">${formatDate(job.dueDate)}</div>
+        <div class="process" title="${escapeHtml(job.process)}">${escapeHtml(job.process)}</div>
+        <div class="statusWrap">
+          <span class="dot"></span>
+          <span class="statusPill">${escapeHtml(job.status)}</span>
+        </div>
+        <div class="lastUpdate">
+          ${timeAgo(job.updatedAt)}
+          <div class="muted">${formatDateTime(job.updatedAt)}</div>
+        </div>
+      `;
+      return r;
+    }
+
+    function metricCard(name, value, hint){
+      const c = document.createElement("div");
+      c.className = "card";
+      c.innerHTML = `
+        <div class="metric">
+          <div class="name">${escapeHtml(name)}</div>
+          <div class="value">${escapeHtml(String(value))}</div>
+        </div>
+        <div class="hint">${escapeHtml(hint)}</div>
+      `;
+      return c;
+    }
+
+    function countByStatus(items){
+      const out = {};
+      for (const j of items) out[j.status] = (out[j.status] || 0) + 1;
+      return out;
+    }
+
+    // =========================
+    // Clock
+    // =========================
+    const elClockTime = document.getElementById("clockTime");
+    const elClockDate = document.getElementById("clockDate");
+    function tickClock(){
+      const now = new Date();
+      elClockTime.textContent = now.toLocaleTimeString([], { hour12:false });
+      elClockDate.textContent = now.toLocaleDateString([], { weekday:"long", year:"numeric", month:"short", day:"2-digit" }).toUpperCase();
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    // =========================
+    // Events
+    // =========================
+    elSearch.addEventListener("input", render);
+    elFilter.addEventListener("change", render);
+    elSort.addEventListener("change", render);
+
+    // Initial render
+    render();
+
+    // =========================
+    // Helpers
+    // =========================
+    function minutesAgo(m){
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - m);
+      return d.toISOString();
+    }
+    function timeAgo(iso){
+      const then = new Date(iso);
+      const now = new Date();
+      const sec = Math.max(0, Math.floor((now - then)/1000));
+      if (sec < 60) return `${sec}s ago`;
+      const min = Math.floor(sec/60);
+      if (min < 60) return `${min}m ago`;
+      const hr = Math.floor(min/60);
+      if (hr < 24) return `${hr}h ${min%60}m ago`;
+      const d = Math.floor(hr/24);
+      return `${d}d ${hr%24}h ago`;
+    }
+    function formatDate(yyyyMmDd){
+      const d = new Date(yyyyMmDd + "T00:00:00");
+      return d.toLocaleDateString([], { year:"numeric", month:"short", day:"2-digit" });
+    }
+    function formatDateTime(iso){
+      const d = new Date(iso);
+      return d.toLocaleString([], { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit", hour12:false });
+    }
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      })[c]);
+    }
+
+    // =========================
+    // NEXT STEP (when you connect ClickUp)
+    // Replace demoJobs with fetched jobs from your backend:
+    //
+    // async function loadLive(){
+    //   const res = await fetch("/api/board");
+    //   const data = await res.json();
+    //   demoJobs.length = 0;
+    //   demoJobs.push(...data.jobs);
+    //   render();
+    // }
+    // setInterval(loadLive, 20000);
+    // =========================
+  </script>
+</body>
+</html>

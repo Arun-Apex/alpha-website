@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Address Info</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#f6f8fb;--card:#fff;--text:#101828;--muted:#667085;--line:#e5e7eb;--primary:#2563eb;--shadow:0 10px 30px rgba(16,24,40,.08)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    .wrap{max-width:760px;margin:0 auto;padding:18px 14px 90px}
+    .top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .back{width:38px;height:38px;border-radius:14px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--text);box-shadow:var(--shadow)}
+    h1{font-size:18px;margin:0}
+    .sub{margin:6px 0 14px;color:var(--muted);font-size:12px}
+    .card{background:var(--card);border:1px solid rgba(229,231,235,.8);border-radius:18px;box-shadow:0 10px 24px rgba(16,24,40,.06);padding:14px;margin-top:12px}
+    .card h2{font-size:14px;margin:0 0 12px}
+    .grid{display:grid;gap:10px}
+    @media(min-width:720px){ .two{grid-template-columns:1fr 1fr} }
+    label{font-size:11px;letter-spacing:.08em;color:#98a2b3;font-weight:700}
+    input{width:100%;padding:12px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:13px;outline:none}
+    input:focus{border-color:#bcd2ff;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .toggle{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+    .btn{width:100%;padding:12px 14px;border-radius:14px;border:0;background:var(--primary);color:#fff;font-weight:800;cursor:pointer;margin-top:14px}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .msg{margin-top:10px;font-size:12px;color:var(--muted)}
+    .err{color:#b42318}
+    .ok{color:#027a48}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <a class="back" href="/app/" aria-label="Back">←</a>
+      <div>
+        <h1>Address Info</h1>
+        <div class="sub">Please enter your shipping and billing details.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Customer Info</h2>
+      <div class="grid">
+        <div>
+          <label>FULL NAME</label>
+          <input id="full_name" placeholder="e.g. John Doe" />
+        </div>
+        <div class="grid two">
+          <div>
+            <label>EMAIL ADDRESS</label>
+            <input id="email" placeholder="e.g. name@example.com" />
+          </div>
+          <div>
+            <label>PHONE NUMBER</label>
+            <input id="phone" placeholder="+66..." />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Shipping Address</h2>
+      <div class="grid">
+        <div>
+          <label>STREET ADDRESS</label>
+          <input id="ship_street" placeholder="Enter street name and number" />
+        </div>
+        <div class="grid two">
+          <div>
+            <label>CITY</label>
+            <input id="ship_city" placeholder="City" />
+          </div>
+          <div>
+            <label>PROVINCE</label>
+            <input id="ship_province" placeholder="Province" />
+          </div>
+        </div>
+        <div class="grid two">
+          <div>
+            <label>POSTAL CODE</label>
+            <input id="ship_postal_code" placeholder="00000" />
+          </div>
+          <div>
+            <label>RECIPIENT PHONE</label>
+            <input id="ship_recipient_phone" placeholder="+66..." />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:4px">
+          <div class="toggle">
+            <span>Billing address same as shipping</span>
+          </div>
+          <label style="letter-spacing:0">
+            <input id="bill_same_as_ship" type="checkbox" checked />
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="billingCard">
+      <h2>Billing Address</h2>
+      <div class="grid">
+        <div>
+          <label>STREET ADDRESS</label>
+          <input id="bill_street" placeholder="Enter street name and number" />
+        </div>
+        <div class="grid two">
+          <div>
+            <label>CITY</label>
+            <input id="bill_city" placeholder="City" />
+          </div>
+          <div>
+            <label>PROVINCE</label>
+            <input id="bill_province" placeholder="Province" />
+          </div>
+        </div>
+        <div class="grid two">
+          <div>
+            <label>POSTAL CODE</label>
+            <input id="bill_postal_code" placeholder="00000" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" id="saveBtn">Save Address</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <script>
+    const ids = [
+      "full_name","email","phone",
+      "ship_street","ship_city","ship_province","ship_postal_code","ship_recipient_phone",
+      "bill_same_as_ship",
+      "bill_street","bill_city","bill_province","bill_postal_code"
+    ];
+
+    const el = (id) => document.getElementById(id);
+    const msg = (t, cls="") => { const m = el("msg"); m.className = "msg " + cls; m.textContent = t || ""; };
+	
+	const requiredFields = [
+  "full_name",
+  "phone",
+  "ship_street",
+  "ship_city",
+  "ship_province",
+  "ship_postal_code"
+];
+
+function validateRequired() {
+  let ok = true;
+  for (const id of requiredFields) {
+    if (!el(id).value.trim()) ok = false;
+  }
+  el("saveBtn").disabled = !ok;
+}
+
+    function setBillingVisible() {
+      const same = el("bill_same_as_ship").checked;
+      el("billingCard").style.display = same ? "none" : "block";
+    }
+
+    async function loadProfile() {
+      const r = await fetch("/api/customer/profile", { credentials: "include" });
+      if (!r.ok) { location.href = "/"; return; }
+      const j = await r.json();
+      if (!j.profile) { setBillingVisible(); validateRequired(); return; }
+
+      const p = j.profile;
+      for (const id of ids) {
+        if (id === "bill_same_as_ship") continue;
+        if (p[id] !== undefined && el(id)) el(id).value = p[id] ?? "";
+      }
+      el("bill_same_as_ship").checked = (p.bill_same_as_ship !== false);
+setBillingVisible();
+validateRequired();
+    }
+
+    async function saveProfile() {
+      msg("");
+      el("saveBtn").disabled = true;
+
+      const payload = {
+        full_name: el("full_name").value.trim(),
+        email: el("email").value.trim(),
+        phone: el("phone").value.trim(),
+
+        ship_street: el("ship_street").value.trim(),
+        ship_city: el("ship_city").value.trim(),
+        ship_province: el("ship_province").value.trim(),
+        ship_postal_code: el("ship_postal_code").value.trim(),
+        ship_recipient_phone: el("ship_recipient_phone").value.trim(),
+
+        bill_same_as_ship: el("bill_same_as_ship").checked,
+
+        bill_street: el("bill_street").value.trim(),
+        bill_city: el("bill_city").value.trim(),
+        bill_province: el("bill_province").value.trim(),
+        bill_postal_code: el("bill_postal_code").value.trim(),
+      };
+
+      // If same as ship, clear billing fields
+      if (payload.bill_same_as_ship) {
+        payload.bill_street = "";
+        payload.bill_city = "";
+        payload.bill_province = "";
+        payload.bill_postal_code = "";
+      }
+
+      const r = await fetch("/api/customer/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      el("saveBtn").disabled = false;
+
+      if (!r.ok) {
+        msg("Save failed. Please try again.", "err");
+        return;
+      }
+      msg("Saved successfully ✅", "ok");
+      setTimeout(() => msg(""), 2000);
+    }
+
+    // Disable save until required fields are filled
+el("saveBtn").disabled = true;
+requiredFields.forEach(id => {
+  el(id).addEventListener("input", validateRequired);
+});
+
+el("bill_same_as_ship").addEventListener("change", setBillingVisible);
+el("saveBtn").addEventListener("click", saveProfile);
+
+loadProfile();
+validateRequired();
+  </script>
+</body>
+</html>

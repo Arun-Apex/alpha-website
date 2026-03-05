@@ -1,0 +1,7 @@
+{
+  "name": "installed-nodes",
+  "private": true,
+  "dependencies": {
+    "@aotoki/n8n-nodes-line-messaging": "0.10.0"
+  }
+}

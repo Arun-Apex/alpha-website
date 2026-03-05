@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ClickUp Tasks Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{ --bg:#f6f8fb; --card:#fff; --text:#101828; --muted:#667085; --border:#e5e7eb; --shadow:0 10px 24px rgba(16,24,40,.06); }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family:Inter,"Noto Sans Thai",system-ui; background:var(--bg); color:var(--text) }
+    .wrap{ max-width:1200px; margin:0 auto; padding:18px 16px 40px }
+    .hero{ background:linear-gradient(135deg,#e9d5ff 0%,#dbeafe 45%,#c7f9f1 100%); border-radius:22px; padding:16px; box-shadow:var(--shadow); }
+    h1{ margin:0; font-size:18px }
+    .sub{ margin:6px 0 0; color:rgba(16,24,40,.7); font-size:13px }
+    .card{ margin-top:12px; background:var(--card); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+    input, select{ border:1px solid #d1d5db; border-radius:12px; padding:10px 12px; font-size:13px; background:#fff; }
+    button{ border:1px solid #d1d5db; border-radius:12px; padding:10px 12px; font-weight:800; background:#fff; cursor:pointer; }
+    table{ width:100%; border-collapse:separate; border-spacing:0 10px; margin-top:10px }
+    td,th{ text-align:left; font-size:13px; padding:10px 12px; }
+    thead th{ font-size:12px; color:#98a2b3; letter-spacing:.08em }
+    tbody tr{ background:#fff; border:1px solid var(--border); box-shadow:0 6px 14px rgba(16,24,40,.05); }
+    tbody tr td:first-child{ border-top-left-radius:14px; border-bottom-left-radius:14px; }
+    tbody tr td:last-child{ border-top-right-radius:14px; border-bottom-right-radius:14px; }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      background:#eef2ff; border:1px solid rgba(37,99,235,.15);
+      color:#1e40af; font-weight:800; font-size:11px; line-height:1; white-space:nowrap;
+    }
+    .pill-dot{
+      width:8px; height:8px; border-radius:999px;
+      background:#1e40af;
+      box-shadow:0 0 0 3px rgba(30,64,175,.10);
+      flex:none;
+    }
+
+    .muted{ color:var(--muted); font-size:12px }
+    .right{ text-align:right }
+    .small{ font-size:12px; color:#98a2b3 }
+    a{ color:#2563eb; text-decoration:none; font-weight:800 }
+
+    /* NEW: Job switch + due filter */
+    .pill-btn{
+      border:1px solid rgba(0,0,0,.08);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,.04);
+      font-weight:900;
+      font-size:12px;
+      line-height:1;
+    }
+    .pill-btn.active{
+      background:linear-gradient(90deg, rgba(130,170,255,.35), rgba(140,255,220,.35));
+      border-color: rgba(0,0,0,.06);
+    }
+    .pill-btn.ghost{ background:transparent; box-shadow:none; }
+    .job-indicator{
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(0,0,0,.04);
+      font-size:12px;
+      color:rgba(0,0,0,.65);
+      white-space:nowrap;
+    }
+    .mini-sep{ opacity:.5; }
+    .mini-label{ font-size:12px; color:rgba(0,0,0,.55); margin-right:2px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>ดูข้อมูลจาก ClickUp / ClickUp Data Viewer</h1>
+      <div class="sub">Read-only sync → DB → view here. ไม่มีการเขียนกลับไปที่ ClickUp</div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <button id="btnSync">Sync Now</button>
+
+        <!-- JOB SWITCH -->
+        <button id="jobDBtn" class="pill-btn" type="button">JOB D</button>
+        <button id="jobSBtn" class="pill-btn" type="button">JOB S</button>
+        <span class="job-indicator">Viewing: <b id="jobModeLabel">JOB D</b></span>
+
+        <input id="q" placeholder="Search Task Name / ID" style="min-width:260px" />
+
+        <select id="status">
+          <option value="">All Status</option>
+        </select>
+
+        <!-- DUE FILTER -->
+        <span class="mini-label">Due</span>
+        <input id="dueFrom" type="date" />
+        <span class="mini-sep">→</span>
+        <input id="dueTo" type="date" />
+        <button id="clearDue" class="pill-btn ghost" type="button">Clear</button>
+
+        <select id="limit">
+          <option value="20">20</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+        </select>
+
+        <span class="small" id="info"></span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Status</th>
+            <th>Assignee</th>
+            <th>Due</th>
+            <th>Updated</th>
+            <th class="right">Open</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  // ✅ API is root-mounted (verified by curl)
+  const API_BASE = location.pathname.startsWith("/erp/") ? "/erp" : "";
+
+  // Fixed IDs from your system
+  const JOB = {
+    D: { label: "JOB D", listId: "362856746" },
+    S: { label: "JOB S", listId: "362856739" }
+  };
+
+  const els = {
+    btnSync: document.getElementById("btnSync"),
+    q: document.getElementById("q"),
+    status: document.getElementById("status"),
+    limit: document.getElementById("limit"),
+    tbody: document.getElementById("tbody"),
+    info: document.getElementById("info"),
+
+    jobDBtn: document.getElementById("jobDBtn"),
+    jobSBtn: document.getElementById("jobSBtn"),
+    jobModeLabel: document.getElementById("jobModeLabel"),
+
+    dueFrom: document.getElementById("dueFrom"),
+    dueTo: document.getElementById("dueTo"),
+    clearDue: document.getElementById("clearDue"),
+  };
+
+  let lastRows = [];
+
+  let jobMode = (localStorage.getItem("clickup_job_mode") || "D").toUpperCase();
+  if (!JOB[jobMode]) jobMode = "D";
+
+  function setJobMode(mode){
+    jobMode = (mode || "D").toUpperCase();
+    if (!JOB[jobMode]) jobMode = "D";
+    localStorage.setItem("clickup_job_mode", jobMode);
+
+    els.jobDBtn.classList.toggle("active", jobMode === "D");
+    els.jobSBtn.classList.toggle("active", jobMode === "S");
+    els.jobModeLabel.textContent = JOB[jobMode].label;
+
+    // refresh list + status options from server
+    load();
+  }
+
+  function fmtMs(ms){
+    if(!ms) return "-";
+    const d = new Date(Number(ms));
+    if(isNaN(d.getTime())) return "-";
+    return d.toLocaleString();
+  }
+
+  function hexToRgba(hex, a){
+    const h = String(hex||"").trim().replace("#","");
+    if(h.length !== 6) return `rgba(100,116,139,${a})`;
+    const r = parseInt(h.slice(0,2),16);
+    const g = parseInt(h.slice(2,4),16);
+    const b = parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function safeHex(hex){
+    const h = String(hex||"").trim();
+    return /^#[0-9a-fA-F]{6}$/.test(h) ? h : null;
+  }
+
+  function statusPillHtml(statusText, statusColor){
+    const hex = safeHex(statusColor) || "#64748b";
+    const bg = hexToRgba(hex, 0.14);
+    const br = hexToRgba(hex, 0.45);
+
+    return `
+      <span class="pill" style="background:${bg}; border-color:${br}; color:#0f172a;">
+        <span class="pill-dot" style="background:${hex}; box-shadow:0 0 0 3px ${hexToRgba(hex,0.12)}"></span>
+        ${esc(statusText || "-")}
+      </span>
+    `;
+  }
+
+  function rebuildStatusOptions(rows){
+    const current = els.status.value;
+    const map = new Map();
+    for(const r of rows || []){
+      const st = r.status || "";
+      if (!st) continue;
+      if (!map.has(st)) map.set(st, r.statusColor || null);
+    }
+    const statuses = [...map.keys()].sort((a,b)=>a.localeCompare(b));
+
+    els.status.innerHTML =
+      '<option value="">All Status</option>' +
+      statuses.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+
+    if (statuses.includes(current)) els.status.value = current;
+    else els.status.value = "";
+  }
+
+  function render(rows){
+    lastRows = rows || [];
+
+    rebuildStatusOptions(lastRows);
+
+    els.tbody.innerHTML = lastRows.map(r => {
+      const taskId = r.taskId || r.task_id || "";
+      const customId = r.customId || r.custom_id || "";
+      const titleLine = esc(r.name || "-");
+      const idLine = customId ? `${esc(customId)} • ${esc(taskId)}` : esc(taskId);
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:800">${titleLine}</div>
+            <div class="muted">${idLine}</div>
+          </td>
+          <td>${statusPillHtml(r.status, r.statusColor)}</td>
+          <td>${esc(r.assignees||"-")}</td>
+          <td>${fmtMs(r.dueDateMs ?? r.due_date_ms)}</td>
+          <td>${fmtMs(r.updatedMs ?? r.updated_ms)}</td>
+          <td class="right">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noreferrer">Open</a>` : "-"}</td>
+        </tr>
+      `;
+    }).join("") || '<tr><td colspan="6" class="muted" style="padding:14px;">No data (sync first)</td></tr>';
+
+    els.info.textContent = `Viewing ${JOB[jobMode].label} • Showing ${lastRows.length}`;
+  }
+
+  async function load(){
+    const params = new URLSearchParams();
+    params.set("limit", String(els.limit.value || 50));
+    params.set("job", jobMode); // backend resolves listId from env mapping
+    // OR use listId directly (extra-safe if config mapping not wired):
+    params.set("listId", JOB[jobMode].listId);
+
+    const q = (els.q.value || "").trim();
+    const status = (els.status.value || "").trim();
+    const dueFrom = (els.dueFrom.value || "").trim();
+    const dueTo = (els.dueTo.value || "").trim();
+
+    if (q) params.set("q", q);
+    if (status) params.set("status", status);
+    if (dueFrom) params.set("dueFrom", dueFrom);
+    if (dueTo) params.set("dueTo", dueTo);
+
+    const res = await fetch(API_BASE + "/api/tasks?" + params.toString());
+    const rows = await res.json().catch(()=>[]);
+    render(Array.isArray(rows) ? rows : []);
+  }
+
+  els.btnSync.addEventListener("click", async ()=>{
+    els.btnSync.disabled = true;
+    els.btnSync.textContent = "Syncing...";
+    try{
+      // sync selected job/list
+      const url = API_BASE + "/clickup/sync?job=" + encodeURIComponent(jobMode);
+      const r = await fetch(url, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:"{}"
+      });
+      await r.json().catch(()=>null);
+    }catch(e){}
+    await load();
+    els.btnSync.disabled = false;
+    els.btnSync.textContent = "Sync Now";
+  });
+
+  // Filters trigger server reload (because we now query server with filters)
+  els.q.addEventListener("input", debounce(load, 250));
+  els.status.addEventListener("change", load);
+  els.limit.addEventListener("change", load);
+
+  els.dueFrom.addEventListener("change", load);
+  els.dueTo.addEventListener("change", load);
+  els.clearDue.addEventListener("click", ()=>{
+    els.dueFrom.value = "";
+    els.dueTo.value = "";
+    load();
+  });
+
+  els.jobDBtn.addEventListener("click", ()=>setJobMode("D"));
+  els.jobSBtn.addEventListener("click", ()=>setJobMode("S"));
+
+  function esc(s){ return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+
+  function debounce(fn, wait){
+    let t = null;
+    return (...args)=>{
+      clearTimeout(t);
+      t = setTimeout(()=>fn(...args), wait);
+    };
+  }
+
+  // init
+  setJobMode(jobMode);
+</script>
+</body>
+</html>

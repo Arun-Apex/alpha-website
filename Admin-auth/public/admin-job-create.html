@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create Job • Admin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#fff; --text:#101828; --muted:#667085;
+      --primary:#2563eb; --primary2:#1d4ed8;
+      --shadow:0 10px 30px rgba(16,24,40,.08);
+      --border:rgba(229,231,235,.85);
+      --danger:#ef4444;
+    }
+    *{ box-sizing:border-box }
+    body{
+      margin:0;
+      font-family: Inter, "Noto Sans Thai", system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:var(--bg); color:var(--text)
+    }
+    a{ color:inherit; text-decoration:none }
+    .wrap{ max-width:1100px; margin:0 auto; padding:18px 16px 40px }
+
+    .topbar{
+      display:flex; align-items:center; gap:10px;
+      margin-bottom:14px;
+    }
+    .logo{
+      width:38px; height:38px; border-radius:12px; background:#fff;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 6px 18px rgba(0,0,0,.08); font-weight:800; color:#111;
+    }
+    .brand{ font-weight:800 }
+    .crumb{ margin-left:auto; display:flex; gap:10px; align-items:center }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:10px 14px; border-radius:12px;
+      border:1px solid #d1d5db; background:#fff; color:var(--primary);
+      font-weight:800; font-size:12px; cursor:pointer;
+    }
+    .btnPrimary{
+      background:linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+      border:1px solid rgba(37,99,235,.35);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(37,99,235,.18);
+    }
+    .btn:disabled{ opacity:.6; cursor:not-allowed }
+
+    .hero{
+      background:
+        radial-gradient(1200px 500px at 10% 0%, #dbeafe 0%, rgba(219,234,254,0) 60%),
+        linear-gradient(135deg, #e9d5ff 0%, #dbeafe 45%, #c7f9f1 100%);
+      border-radius:26px; padding:18px; box-shadow:var(--shadow);
+      position:relative; overflow:hidden;
+      margin-bottom:14px;
+    }
+    .hero h1{ margin:0; font-size:20px }
+    .hero p{ margin:4px 0 0; color:rgba(16,24,40,.7); font-size:13px }
+    @media (min-width:920px){
+      .hero h1{ font-size:24px }
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width:920px){
+      .grid{ grid-template-columns: 1.15fr .85fr; }
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:0 10px 24px rgba(16,24,40,.06);
+      padding:14px;
+    }
+    .cardTitle{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+      margin-bottom:10px;
+    }
+    .cardTitle h2{ margin:0; font-size:14px }
+    .sub{ margin:0; font-size:12px; color:var(--muted) }
+
+    .form{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width:920px){
+      .row2{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .field label{
+      display:block;
+      font-weight:800;
+      font-size:12px;
+      margin:0 0 6px;
+    }
+    .field label .en{
+      display:block;
+      font-weight:600;
+      color:#98a2b3;
+      font-size:11px;
+      margin-top:2px;
+    }
+    input, select, textarea{
+      width:100%;
+      border-radius:14px;
+      border:1px solid rgba(209,213,219,.9);
+      padding:11px 12px;
+      outline:none;
+      font-size:13px;
+      background:#fff;
+    }
+    textarea{ min-height:110px; resize:vertical }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+    .hint{ font-size:12px; color:#98a2b3; margin-top:6px }
+    .req{ color:var(--danger); margin-left:2px }
+
+    .drop{
+      border:1px dashed rgba(148,163,184,.75);
+      border-radius:14px;
+      padding:14px;
+      background:#fbfdff;
+      color:#64748b;
+      font-size:12px;
+    }
+
+    .error{
+      border:1px solid rgba(239,68,68,.35);
+      background: rgba(239,68,68,.08);
+      color:#7f1d1d;
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:13px;
+      white-space:pre-line;
+    }
+
+    .actions{
+      display:flex; gap:10px; justify-content:flex-end; margin-top:10px;
+    }
+
+    /* ===== Customer search (overlay, not breaking layout) ===== */
+    .customerWrap{ position:relative; }
+    .customerSelectedPill{
+      display:none;
+      margin-top:8px;
+      border:1px solid rgba(229,231,235,.95);
+      background:#f8fafc;
+      border-radius:14px;
+      padding:10px 12px;
+      align-items:center;
+      gap:10px;
+    }
+    .customerSelectedPill.show{ display:flex; }
+    .custAvatar{
+      width:28px;height:28px;border-radius:999px;object-fit:cover;background:#e5e7eb;flex:none;
+    }
+    .custMeta{ line-height:1.1 }
+    .custName{ font-weight:800; font-size:13px }
+    .custCode{ font-size:12px; color:#6b7280; margin-top:3px }
+    .custClear{
+      margin-left:auto;
+      border:1px solid #d1d5db;
+      background:#fff;
+      color:#0f172a;
+      border-radius:12px;
+      padding:8px 10px;
+      font-weight:800;
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    .customerDropdown{
+      position:absolute;
+      left:0; right:0;
+      top:calc(100% + 8px);
+      z-index:50;
+      display:none;
+      border-radius:14px;
+      border:1px solid rgba(229,231,235,.95);
+      background:#fff;
+      box-shadow:0 18px 45px rgba(16,24,40,.18);
+      overflow:hidden;
+      max-height:260px;
+      overflow-y:auto;
+    }
+    .customerDropdown.show{ display:block; }
+    .customerItemBtn{
+      width:100%;
+      border:0;
+      background:#fff;
+      cursor:pointer;
+      text-align:left;
+      padding:10px 12px;
+      border-bottom:1px solid #f1f5f9;
+    }
+    .customerItemBtn:hover{ background:#f8fafc; }
+    .customerRow{
+      display:flex; align-items:center; gap:10px;
+    }
+    .customerEmpty{
+      padding:10px 12px;
+      color:#6b7280;
+      font-size:13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="logo">O</div>
+      <div>
+        <div class="brand">Octopus Media</div>
+        <div class="sub">Admin • Create Job</div>
+      </div>
+
+      <div class="crumb">
+        <button class="btn" id="btnBack" type="button">← Back</button>
+        <button class="btn" id="btnMenu" type="button">Menu</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>สร้างงานใหม่ / Create New Job</h1>
+      <p>กรอกข้อมูลหลักก่อน แล้วเราจะเชื่อมต่อ ClickUp / FlowAccount / LINE ในขั้นต่อไป • Fill the basics now. Integrations later.</p>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: main form -->
+      <div class="card">
+        <div class="cardTitle">
+          <div>
+            <h2>รายละเอียดงาน / Job Details</h2>
+            <p class="sub">Fields marked * are required</p>
+          </div>
+        </div>
+
+        <div id="msgBox" class="error" hidden></div>
+
+        <form id="jobForm" class="form">
+
+          <!-- ✅ Customer picker is here (in form), not in topbar -->
+          <div class="field customerWrap">
+            <label>
+              Customer<span class="req">*</span>
+              <span class="en">Search by Customer Code or Name</span>
+            </label>
+
+            <input id="customerSearch"
+                   placeholder="Type CUS-000040 or name…"
+                   autocomplete="off"
+                   aria-autocomplete="list"
+                   aria-expanded="false" />
+
+            <div id="customerResults" class="customerDropdown" role="listbox"></div>
+
+            <div id="customerSelected" class="customerSelectedPill">
+              <img id="customerSelectedAvatar" class="custAvatar" alt="" />
+              <div class="custMeta">
+                <div id="customerSelectedName" class="custName"></div>
+                <div id="customerSelectedCode" class="custCode"></div>
+              </div>
+              <button type="button" id="customerClear" class="custClear">Clear</button>
+            </div>
+
+            <input type="hidden" id="customerId" name="customerId" required />
+            <div class="hint">Tip: start with <b>CUS-</b> to find quickly.</div>
+          </div>
+
+          <!-- rest of your form (unchanged) -->
+          <div class="row2">
+            <div class="field">
+              <label>
+                เลขที่ JOB<span class="req">*</span>
+                <span class="en">Job No.*</span>
+              </label>
+              <input id="jobNo" name="jobNo" placeholder="D23568" required />
+            </div>
+
+            <div class="field">
+              <label>
+                Quotation No.<span class="req">*</span>
+                <span class="en">Quotation No.*</span>
+              </label>
+              <input id="quotationNo" name="quotationNo" placeholder="Q-2026-0001" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>
+              รายละเอียดงาน (รายละเอียดกว้างๆ)<span class="req">*</span>
+              <span class="en">Task description*</span>
+            </label>
+            <textarea id="description" name="description" placeholder="เช่น: ป้ายหน้าร้าน ขนาด..., วัสดุ..., งานติดตั้ง..." required></textarea>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>
+                Artwork (ไฟล์ / ลิงก์)
+                <span class="en">Artwork (file/link)</span>
+              </label>
+              <input id="artwork" name="artwork" placeholder="Google Drive link / file name" />
+            </div>
+
+            <div class="field">
+              <label>
+                Due date (วันที่ส่งมอบ)<span class="req">*</span>
+                <span class="en">Due date*</span>
+              </label>
+              <input id="dueDate" name="dueDate" type="date" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>
+              Location (สถานที่ติดตั้ง/จัดส่ง)
+              <span class="en">Location</span>
+            </label>
+            <input id="location" name="location" placeholder="Address / Google map link" />
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>
+                วิธีส่งงาน
+                <span class="en">Delivery method</span>
+              </label>
+              <select id="deliveryMethod" name="deliveryMethod">
+                <option value="">Select option…</option>
+                <option value="pickup">รับเอง / Pickup</option>
+                <option value="courier">ขนส่ง / Courier</option>
+                <option value="installation">ติดตั้งหน้างาน / On-site installation</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>
+                Priority (ความเร่งด่วน)
+                <span class="en">Priority</span>
+              </label>
+              <select id="priority" name="priority">
+                <option value="">Select priority…</option>
+                <option value="low">Low / ต่ำ</option>
+                <option value="normal">Normal / ปกติ</option>
+                <option value="high">High / สูง</option>
+                <option value="urgent">Urgent / ด่วนมาก</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>
+                Status<span class="req">*</span>
+                <span class="en">Status*</span>
+              </label>
+              <select id="status" name="status" required>
+                <option value="">Select option…</option>
+                <option value="pending_admin">PENDING ADMIN</option>
+                <option value="in_design">IN DESIGN</option>
+                <option value="in_production">IN PRODUCTION</option>
+                <option value="shipped">SHIPPED</option>
+                <option value="completed">COMPLETED</option>
+                <option value="cancelled">CANCELLED</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>
+                Payment Terms<span class="req">*</span>
+                <span class="en">Payment Terms*</span>
+              </label>
+              <select id="paymentTerms" name="paymentTerms" required>
+                <option value="">Select option…</option>
+                <option value="deposit_50">มัดจำ 50% / 50% Deposit</option>
+                <option value="deposit_70">มัดจำ 70% / 70% Deposit</option>
+                <option value="full">ชำระเต็ม / Full payment</option>
+                <option value="credit">เครดิต / Credit</option>
+              </select>
+              <div class="hint">* Payment via LINE/FlowAccount will be added later.</div>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>
+                Amount (ยอดงาน)
+                <span class="en">Amount</span>
+              </label>
+              <input id="amount" name="amount" inputmode="decimal" placeholder="0.00" />
+            </div>
+            <div class="field">
+              <label>
+                Deposit
+                <span class="en">Deposit</span>
+              </label>
+              <input id="deposit" name="deposit" inputmode="decimal" placeholder="0.00" />
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>
+                Balance
+                <span class="en">Balance</span>
+              </label>
+              <input id="balance" name="balance" inputmode="decimal" placeholder="0.00" />
+            </div>
+            <div class="field">
+              <label>
+                Assignee
+                <span class="en">Assignee</span>
+              </label>
+              <input id="assignee" name="assignee" placeholder="username / team" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>
+              Remark
+              <span class="en">Remark</span>
+            </label>
+            <textarea id="remark" name="remark" placeholder="หมายเหตุ / Notes"></textarea>
+          </div>
+
+          <div class="field">
+            <label>
+              FORM Subtask
+              <span class="en">Subtask</span>
+            </label>
+            <textarea id="subtask" name="subtask" placeholder="เช่น: งานเจาะ, งานประกอบ, งานติดตั้ง..."></textarea>
+          </div>
+
+          <div class="actions">
+            <button class="btn" id="btnCancel" type="button">Cancel</button>
+            <button class="btn btnPrimary" id="btnSubmit" type="submit">Submit</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- RIGHT: attachments / help -->
+      <div class="card">
+        <div class="cardTitle">
+          <div>
+            <h2>ไฟล์แนบ / Attachments</h2>
+            <p class="sub">Upload will be enabled later</p>
+          </div>
+        </div>
+
+        <div class="drop">
+          Drop your files here to upload<br/>
+          (coming soon — will connect to storage)
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="cardTitle">
+          <div>
+            <h2>Tips</h2>
+            <p class="sub">Recommended minimum fields</p>
+          </div>
+        </div>
+
+        <ul style="margin:0; padding-left:18px; color:#667085; font-size:13px; line-height:1.6;">
+          <li>Job No, Quotation No, Due date, Status, Payment Terms</li>
+          <li>Use “PENDING ADMIN” as default if unsure</li>
+          <li>Later: ClickUp will overwrite Status/Stages automatically</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const customerSearch = $("customerSearch");
+    const customerResults = $("customerResults");
+    const customerId = $("customerId");
+
+    const customerSelected = $("customerSelected");
+    const customerSelectedAvatar = $("customerSelectedAvatar");
+    const customerSelectedName = $("customerSelectedName");
+    const customerSelectedCode = $("customerSelectedCode");
+    const customerClear = $("customerClear");
+
+    // If Nginx routes /api to webapp-auth, keep this.
+    // If not, change to /oms/api/admin/customers (proxy)
+    const CUSTOMER_API = "/api/admin/customers";
+
+    function esc(s){ return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+
+    function openDropdown(){ customerResults.classList.add("show"); customerSearch.setAttribute("aria-expanded","true"); }
+    function closeDropdown(){ customerResults.classList.remove("show"); customerSearch.setAttribute("aria-expanded","false"); }
+
+    function setSelected(c){
+      customerId.value = c.id;
+      customerSelectedName.textContent = c.display_name || "-";
+      customerSelectedCode.textContent = c.customer_code || "";
+      if (c.picture_url) {
+        customerSelectedAvatar.src = c.picture_url;
+        customerSelectedAvatar.style.display = "";
+      } else {
+        customerSelectedAvatar.style.display = "none";
+      }
+      customerSelected.classList.add("show");
+      closeDropdown();
+    }
+
+    function clearSelected(){
+      customerId.value = "";
+      customerSelected.classList.remove("show");
+      customerSearch.value = "";
+      customerSearch.focus();
+    }
+
+    async function searchCustomers(q){
+      const url = CUSTOMER_API + "?q=" + encodeURIComponent(q || "") + "&limit=20";
+      const r = await fetch(url, { credentials:"include" });
+      if (!r.ok) throw new Error("Customer API error: " + r.status);
+      const data = await r.json();
+      return (data && data.ok && Array.isArray(data.customers)) ? data.customers : [];
+    }
+
+    function renderDropdown(items){
+      if (!items || !items.length) {
+        customerResults.innerHTML = `<div class="customerEmpty">No customers found</div>`;
+        openDropdown();
+        return;
+      }
+
+      customerResults.innerHTML = items.map(c => `
+        <button type="button" class="customerItemBtn"
+          data-id="${esc(c.id)}"
+          data-code="${esc(c.customer_code || "")}"
+          data-name="${esc(c.display_name || "")}"
+          data-pic="${esc(c.picture_url || "")}">
+          <div class="customerRow">
+            ${c.picture_url ? `<img class="custAvatar" src="${esc(c.picture_url)}" alt="" onerror="this.style.display='none'">` : `<span class="custAvatar" style="display:inline-block"></span>`}
+            <div>
+              <div style="font-weight:800">${esc(c.display_name || "-")}</div>
+              <div style="font-size:12px; color:#6b7280;">${esc(c.customer_code || "")}</div>
+            </div>
+          </div>
+        </button>
+      `).join("");
+
+      openDropdown();
+    }
+
+    let t = null;
+    customerSearch.addEventListener("input", () => {
+      clearTimeout(t);
+      const q = customerSearch.value.trim();
+
+      // if user cleared input, close dropdown
+      if (!q) { closeDropdown(); customerResults.innerHTML=""; return; }
+
+      t = setTimeout(async () => {
+        try {
+          const items = await searchCustomers(q);
+          renderDropdown(items);
+        } catch (e) {
+          customerResults.innerHTML = `<div class="customerEmpty" style="color:#b91c1c;">${esc(e.message)}</div>`;
+          openDropdown();
+        }
+      }, 220);
+    });
+
+    customerSearch.addEventListener("focus", () => {
+      const q = customerSearch.value.trim();
+      if (q) {
+        // re-open if already typed
+        if (customerResults.innerHTML.trim()) openDropdown();
+      }
+    });
+
+    customerResults.addEventListener("click", (ev) => {
+      const btn = ev.target.closest("button[data-id]");
+      if (!btn) return;
+
+      const c = {
+        id: btn.getAttribute("data-id"),
+        customer_code: btn.getAttribute("data-code"),
+        display_name: btn.getAttribute("data-name"),
+        picture_url: btn.getAttribute("data-pic"),
+      };
+      setSelected(c);
+    });
+
+    customerClear.addEventListener("click", clearSelected);
+
+    // Close dropdown on outside click
+    document.addEventListener("click", (ev) => {
+      const wrap = ev.target.closest(".customerWrap");
+      if (!wrap) closeDropdown();
+    });
+
+    // ESC closes dropdown
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") closeDropdown();
+    });
+  </script>
+
+  <!-- keep your existing JS -->
+  <script src="./js/admin-job-create.js"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Orders</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<style>
+:root{
+  --bg:#f6f8fb;
+  --card:#ffffff;
+  --text:#101828;
+  --muted:#667085;
+  --line:#e5e7eb;
+  --shadow:0 14px 40px rgba(16,24,40,.08);
+  --shadow2:0 10px 24px rgba(16,24,40,.06);
+  --r:18px;
+  --primary:#5b67ff;
+  --primary2:#4f46e5;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.wrap{
+  max-width:720px;
+  margin:0 auto;
+  padding:16px 16px 90px;
+}
+
+.top{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.back{
+  width:36px;height:36px;border-radius:14px;
+  background:#fff;
+  border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  box-shadow:var(--shadow2);
+}
+
+.title{
+  font-weight:800;
+  font-size:18px;
+}
+
+.section-title{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.12em;
+  color:#98a2b3;
+  margin:18px 4px 10px;
+  text-transform:uppercase;
+}
+
+.card{
+  background:var(--card);
+  border-radius:22px;
+  padding:16px;
+  border:1px solid rgba(229,231,235,.7);
+  box-shadow:var(--shadow2);
+  margin-bottom:12px;
+  cursor:pointer;
+  transition:.2s;
+}
+.card:hover{transform:translateY(-2px)}
+
+.card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.jobno{
+  font-weight:900;
+  font-size:14px;
+}
+
+.badge{
+  font-size:11px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-weight:800;
+}
+
+.badge.pending_admin{background:#fef3c7;color:#92400e}
+.badge.in_production{background:#dbeafe;color:#1d4ed8}
+.badge.completed{background:#dcfce7;color:#166534}
+.badge.cancelled{background:#fee2e2;color:#991b1b}
+
+.meta{
+  margin-top:8px;
+  font-size:13px;
+  color:var(--muted);
+}
+
+.empty{
+  text-align:center;
+  padding:40px 10px;
+  color:var(--muted);
+}
+
+.nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;
+  padding:10px 14px;
+}
+.nav a{
+  text-decoration:none;
+  font-weight:800;
+  font-size:11px;
+  color:#667085;
+}
+.nav a.active{color:var(--primary2)}
+
+@media (min-width:900px){
+  .nav{display:none}
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="back" onclick="history.back()">←</div>
+    <div class="title">My Orders</div>
+  </div>
+
+  <div class="section-title">ACTIVE</div>
+  <div id="activeOrders"></div>
+
+  <div class="section-title">PREVIOUS</div>
+  <div id="previousOrders"></div>
+
+</div>
+
+<nav class="nav">
+  <a href="/app/">Home</a>
+  <a class="active" href="/app/orders/">Orders</a>
+</nav>
+
+<script>
+const activeEl = document.getElementById("activeOrders");
+const prevEl = document.getElementById("previousOrders");
+
+function badge(status){
+  const span = document.createElement("span");
+  span.className = "badge " + status;
+  span.textContent = status.replace("_"," ").toUpperCase();
+  return span;
+}
+
+function card(o){
+  const div = document.createElement("div");
+  div.className = "card";
+  div.onclick = () => location.href ="/app/orders/job-details.html?jobKey=" + o.id;
+
+  const header = document.createElement("div");
+  header.className = "card-header";
+
+  const job = document.createElement("div");
+  job.className = "jobno";
+  job.textContent = o.job_no;
+
+  header.appendChild(job);
+  header.appendChild(badge(o.status));
+  div.appendChild(header);
+
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  meta.innerHTML = `
+    ${o.project_name}<br/>
+    ${o.job_type} • ${new Date(o.created_at).toLocaleDateString()}
+  `;
+  div.appendChild(meta);
+
+  return div;
+}
+
+async function loadOrders(){
+  const r = await fetch("/api/orders",{credentials:"include"});
+  if(!r.ok){ location.href="/"; return; }
+
+  const j = await r.json();
+  const orders = j.orders || [];
+
+  if(!orders.length){
+    activeEl.innerHTML = `<div class="empty">No orders yet.<br/><br/><a href="/app/orders/new/">Create First Order</a></div>`;
+    prevEl.innerHTML = "";
+    return;
+  }
+
+  orders.forEach(o=>{
+    if(o.status === "completed" || o.status === "cancelled"){
+      prevEl.appendChild(card(o));
+    }else{
+      activeEl.appendChild(card(o));
+    }
+  });
+}
+
+loadOrders();
+</script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>User Management</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+  <main class="screen">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+
+    <section class="hero">
+      <div class="brand" style="padding-bottom:10px;">
+        <div class="brand-logo"><span>O</span></div>
+        <div class="brand-title">
+          <div class="brand-name">USER MANAGEMENT</div>
+          <div class="brand-sub">
+            <span class="th">จัดการผู้ใช้ / กลุ่มผู้ใช้</span>
+            <span class="en">Manage users / user groups</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <input id="search" class="input" placeholder="ค้นหา / Search username, name..." />
+            <select id="filterGroup" class="input"></select>
+            <select id="filterStatus" class="input">
+              <option value="">สถานะทั้งหมด / All status</option>
+              <option value="active">Active</option>
+              <option value="disabled">Disabled</option>
+            </select>
+          </div>
+
+          <div class="toolbar-right">
+            <button id="btnNew" class="btn-primary">
+              <span class="th">เพิ่มผู้ใช้</span>
+              <span class="en">New user</span>
+            </button>
+
+            <button id="btnLogout" class="btn-ghost">
+              <span class="th">ออกจากระบบ</span>
+              <span class="en">Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="errorBox" class="error" hidden></div>
+
+        <div class="table-wrap">
+          <table class="table" id="userTable">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>ชื่อ / Name</th>
+                <th>System Role</th>
+                <th>Group</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th style="width: 160px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal" id="modal" hidden>
+        <div class="modal-card">
+          <div class="modal-head">
+            <div>
+              <div class="modal-title" id="modalTitle">User</div>
+              <div class="modal-sub">
+                <span class="th">แก้ไขข้อมูลผู้ใช้</span>
+                <span class="en">Edit user details</span>
+              </div>
+            </div>
+            <button class="icon-btn" id="modalClose" type="button">✕</button>
+          </div>
+
+          <form id="userForm" class="form">
+            <input type="hidden" id="userId" />
+
+            <label class="field">
+              <div class="label"><span class="th">ชื่อผู้ใช้งาน</span><span class="en">Username</span></div>
+              <input id="username" class="input" required />
+            </label>
+
+            <label class="field">
+              <div class="label"><span class="th">ชื่อแสดงผล</span><span class="en">Display name</span></div>
+              <input id="displayName" class="input" />
+            </label>
+
+            <label class="field">
+              <div class="label"><span class="th">อีเมล</span><span class="en">Email</span></div>
+              <input id="email" class="input" />
+            </label>
+
+            <div class="grid2">
+              <label class="field">
+                <div class="label"><span class="th">บทบาทระบบ</span><span class="en">System role</span></div>
+                <select id="systemRole" class="input">
+                  <option value="user">user</option>
+                  <option value="superadmin">superadmin</option>
+                  <option value="owner">owner</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <div class="label"><span class="th">กลุ่มผู้ใช้</span><span class="en">User group</span></div>
+                <select id="groupKey" class="input"></select>
+              </label>
+            </div>
+
+            <div class="grid2">
+              <label class="field">
+                <div class="label"><span class="th">สถานะ</span><span class="en">Status</span></div>
+                <select id="status" class="input">
+                  <option value="active">active</option>
+                  <option value="disabled">disabled</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <div class="label"><span class="th">ตั้งรหัสผ่านใหม่</span><span class="en">Set password</span></div>
+                <input id="password" class="input" placeholder="(leave empty to keep)" />
+              </label>
+            </div>
+
+            <div class="actions">
+              <button class="btn-ghost" id="btnDelete" type="button">
+                <span class="th">ลบผู้ใช้</span><span class="en">Delete</span>
+              </button>
+
+              <div class="actions-right">
+                <button class="btn-ghost" id="btnCancel" type="button">
+                  <span class="th">ยกเลิก</span><span class="en">Cancel</span>
+                </button>
+                <button class="btn-primary" type="submit" id="btnSave">
+                  <span class="th">บันทึก</span><span class="en">Save</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="note">
+              <span class="th">* การเปลี่ยน Owner ต้องทำโดย Owner เท่านั้น</span>
+              <span class="en">* Only owner can modify owner account</span>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <footer class="footer" style="margin-top:18px;">
+        <div class="footer-line">OCTOPUS PRODUCTION SYSTEM V1.0</div>
+      </footer>
+    </section>
+  </main>
+
+  <style>
+    .panel{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:14px; }
+    .toolbar{ display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+    .toolbar-left{ display:flex; gap:10px; flex-wrap:wrap; }
+    .toolbar-right{ display:flex; gap:10px; }
+    .input{ padding:10px 12px; border-radius:14px; border:1px solid rgba(15,23,42,.12); outline:none; min-width:180px; }
+    .input:focus{ border-color: rgba(47,107,255,.45); box-shadow: 0 0 0 4px rgba(47,107,255,.10); }
+    .btn-primary{ border:0; background:var(--primary); color:#fff; padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:800; display:flex; flex-direction:column; line-height:1.05; }
+    .btn-primary .en{ font-size:11px; opacity:.9; font-weight:700; }
+    .btn-ghost{ border:0; background:rgba(47,107,255,.10); color:var(--primary); padding:10px 12px; border-radius:14px; cursor:pointer; font-weight:800; display:flex; flex-direction:column; line-height:1.05; }
+    .btn-ghost .en{ font-size:11px; color:#64748b; font-weight:700; }
+    .table-wrap{ margin-top:12px; overflow:auto; border-radius:14px; border:1px solid rgba(15,23,42,.08); }
+    .table{ width:100%; border-collapse:collapse; background:#fff; }
+    .table th,.table td{ padding:10px 10px; border-bottom:1px solid rgba(15,23,42,.06); font-size:13px; text-align:left; white-space:nowrap; }
+    .tag{ padding:4px 8px; border-radius:999px; font-size:12px; background:rgba(15,23,42,.06); }
+    .tag.active{ background: rgba(34,197,94,.12); color:#166534; }
+    .tag.disabled{ background: rgba(239,68,68,.12); color:#991b1b; }
+    .row-actions{ display:flex; gap:6px; }
+    .btn-small{ border:0; padding:7px 10px; border-radius:12px; cursor:pointer; background:rgba(15,23,42,.06); }
+    .btn-small.primary{ background: rgba(47,107,255,.12); color: var(--primary); font-weight:800; }
+
+    .modal{ position:fixed; inset:0; background:rgba(15,23,42,.35); display:flex; align-items:center; justify-content:center; padding:16px; }
+    .modal-card{ width:min(520px, 100%); background:#fff; border-radius:18px; box-shadow: var(--shadow); padding:14px; }
+    .modal-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px; }
+    .modal-title{ font-weight:900; letter-spacing:.2px; }
+    .modal-sub{ margin-top:2px; display:flex; flex-direction:column; gap:2px; color:var(--muted); font-size:12px; }
+    .icon-btn{ border:0; background:rgba(15,23,42,.06); border-radius:12px; padding:8px 10px; cursor:pointer; }
+    .form{ display:flex; flex-direction:column; gap:10px; }
+    .field .label{ font-weight:800; font-size:12px; display:flex; flex-direction:column; gap:1px; }
+    .field .label .en{ font-size:11px; color:var(--muted2); font-weight:700; }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media (max-width: 520px){ .grid2{ grid-template-columns:1fr; } }
+
+    .actions{ display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:6px; }
+    .actions-right{ display:flex; gap:10px; }
+    .note{ margin-top:6px; color:var(--muted2); font-size:11.5px; display:flex; flex-direction:column; gap:2px; }
+  </style>
+
+  <script src="./js/admin-users.js"></script>
+</body>
+</html>

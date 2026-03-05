@@ -1,0 +1,47 @@
+services:
+  erp_postgres:
+    image: postgres:16
+    container_name: erp_postgres
+    environment:
+      POSTGRES_DB: erp
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp_password_change_me
+    volumes:
+      - erp_pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:55432:5432"
+    restart: unless-stopped
+
+  erp:
+    build: .
+    container_name: clickup_erp
+    environment:
+      CLICKUP_TOKEN: "pk_48832291_X70VLC7OUAWJX8JR27J6PC5OIDIPNQJV"   # rotate your old token
+
+      # 🔥 OFFICIAL LIST IDS
+      CLICKUP_LIST_ID_JOB_D: "362856746"
+      CLICKUP_LIST_ID_JOB_S: "362856739"
+
+      # fallback (optional, not required anymore)
+      CLICKUP_LIST_ID: "362856746"
+
+      CLICKUP_INCLUDE_CLOSED: "true"
+      NODE_ENV: production
+      PORT: 3100
+      DATABASE_URL: postgres://erp:erp_password_change_me@erp_postgres:5432/erp
+    depends_on:
+      - erp_postgres
+    ports:
+      - "127.0.0.1:3100:3100"
+    restart: unless-stopped
+
+volumes:
+  erp_pgdata:
+  
+  
+  
+  
+  
+  
+  
+  

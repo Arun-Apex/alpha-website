@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Order Details</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#101828;
+      --muted:#667085;
+      --line:#e5e7eb;
+      --shadow2:0 10px 24px rgba(16,24,40,.06);
+      --primary:#2563eb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui;background:var(--bg);color:var(--text)}
+    .wrap{max-width:720px;margin:0 auto;padding:16px 16px 90px}
+    .top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .back{width:36px;height:36px;border-radius:14px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow2)}
+    .title{font-weight:800;font-size:18px}
+    .card{background:var(--card);border-radius:22px;padding:16px;border:1px solid rgba(229,231,235,.7);box-shadow:var(--shadow2);margin-bottom:14px}
+    .jobno{font-weight:900;font-size:20px}
+    .badge{display:inline-block;font-size:11px;padding:6px 10px;border-radius:999px;font-weight:800;margin-left:10px}
+    .badge.pending_admin{background:#fef3c7;color:#92400e}
+    .badge.in_production{background:#dbeafe;color:#1d4ed8}
+    .badge.completed{background:#dcfce7;color:#166534}
+    .badge.cancelled{background:#fee2e2;color:#991b1b}
+    .label{font-size:11px;letter-spacing:.12em;color:#98a2b3;font-weight:800;margin-bottom:6px;text-transform:uppercase}
+    .value{font-size:14px;margin-bottom:8px}
+    .nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 14px}
+    .nav a{text-decoration:none;font-weight:800;font-size:11px;color:#667085}
+    .nav a.active{color:var(--primary)}
+    @media (min-width:900px){.nav{display:none}}
+    .msgErr{color:#b42318;font-size:12px;margin-top:8px}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="back" onclick="history.back()">←</div>
+      <div class="title">Order Details</div>
+    </div>
+
+    <div class="card">
+      <div>
+        <span class="jobno" id="jobno">...</span>
+        <span id="statusBadge"></span>
+      </div>
+      <div style="margin-top:6px;color:#667085;font-size:12px;" id="createdAt"></div>
+      <div id="orderErr" class="msgErr"></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Project Information</div>
+      <div class="value"><strong>Name:</strong> <span id="projectName">-</span></div>
+      <div class="value"><strong>Type:</strong> <span id="jobType">-</span></div>
+      <div class="value"><strong>Description:</strong> <span id="description">-</span></div>
+      <div class="value"><strong>Required Completion:</strong> <span id="completionDate">-</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Production Preferences</div>
+      <div class="value" id="prefs">-</div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="label">Comments / Notes</div>
+
+      <div id="commentsList" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+        <div style="color:#98a2b3;font-size:12px;">Loading comments…</div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <textarea id="commentBody" rows="3" placeholder="Add a note for our team…"
+          style="width:100%;resize:vertical;padding:12px;border-radius:12px;border:1px solid #e5e7eb;font-family:inherit;"></textarea>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+          <button id="sendCommentBtn"
+            style="padding:10px 14px;border-radius:12px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;">
+            Send
+          </button>
+
+          <div id="commentMsg" style="font-size:12px;color:#98a2b3;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="/app/">Home</a>
+    <a class="active" href="/app/orders/">Orders</a>
+  </nav>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const orderId = Number(params.get("id"));
+
+    function badge(status) {
+      const span = document.createElement("span");
+      span.className = "badge " + status;
+      span.textContent = String(status || "").replaceAll("_", " ").toUpperCase();
+      return span;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[c]));
+    }
+
+    function fmtDateOnly(iso) {
+      if (!iso) return "-";
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "-";
+      return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"2-digit" });
+    }
+
+    function fmtDateTime(iso) {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    }
+
+    async function loadOrder() {
+      const errEl = document.getElementById("orderErr");
+      errEl.textContent = "";
+
+      if (!Number.isFinite(orderId) || orderId <= 0) {
+        errEl.textContent = "Invalid order id.";
+        return;
+      }
+
+      const r = await fetch("/api/orders/" + orderId, { credentials: "include" });
+      if (!r.ok) {
+        errEl.textContent = "Unable to load this order (not found or not yours).";
+        return;
+      }
+
+      const j = await r.json();
+      const o = j.order || {};
+
+      document.getElementById("jobno").textContent = o.job_no || "...";
+
+      const badgeHost = document.getElementById("statusBadge");
+      badgeHost.innerHTML = "";
+      if (o.status) badgeHost.appendChild(badge(o.status));
+
+      document.getElementById("createdAt").textContent =
+        o.created_at ? ("Created on " + fmtDateOnly(o.created_at)) : "";
+
+      document.getElementById("projectName").textContent = o.project_name || "-";
+      document.getElementById("jobType").textContent = o.job_type || "-";
+      document.getElementById("description").textContent = o.description || "-";
+      document.getElementById("completionDate").textContent = fmtDateOnly(o.required_completion_date);
+
+      const prefs = [];
+      if (o.installation_required) prefs.push("Installation Required");
+      if (o.delivery_only) prefs.push("Delivery Only");
+      if (o.urgent_production) prefs.push("Urgent Production");
+      document.getElementById("prefs").textContent = prefs.length ? prefs.join(", ") : "Standard Production";
+    }
+
+    async function loadComments() {
+      const list = document.getElementById("commentsList");
+      list.innerHTML = `<div style="color:#98a2b3;font-size:12px;">Loading comments…</div>`;
+
+      if (!Number.isFinite(orderId) || orderId <= 0) {
+        list.innerHTML = `<div style="color:#98a2b3;font-size:12px;">Invalid order id.</div>`;
+        return;
+      }
+
+      const r = await fetch(`/api/orders/${orderId}/comments`, { credentials: "include" });
+      if (!r.ok) {
+        list.innerHTML = `<div style="color:#98a2b3;font-size:12px;">Unable to load comments.</div>`;
+        return;
+      }
+
+      const j = await r.json();
+      const comments = j.comments || [];
+
+      if (!comments.length) {
+        list.innerHTML = `<div style="color:#98a2b3;font-size:12px;">No comments yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = comments.map(c => {
+        const name = escapeHtml(c.display_name || "Customer");
+        const body = escapeHtml(c.body || "");
+        const dt = fmtDateTime(c.created_at);
+        const avatar = c.picture_url
+          ? `<img src="${escapeHtml(c.picture_url)}" style="width:28px;height:28px;border-radius:10px;object-fit:cover;" />`
+          : `<div style="width:28px;height:28px;border-radius:10px;background:#f2f4f7;border:1px solid #e5e7eb;"></div>`;
+
+        return `
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            ${avatar}
+            <div style="flex:1;">
+              <div style="display:flex;gap:8px;align-items:center;">
+                <div style="font-weight:700;font-size:12px;">${name}</div>
+                <div style="color:#98a2b3;font-size:11px;">${escapeHtml(dt)}</div>
+              </div>
+              <div style="margin-top:4px;font-size:13px;line-height:1.4;white-space:pre-wrap;">${body}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function sendComment() {
+      const msg = document.getElementById("commentMsg");
+      const btn = document.getElementById("sendCommentBtn");
+      const ta = document.getElementById("commentBody");
+
+      const body = (ta.value || "").trim();
+      if (!body) { msg.textContent = "Type something first."; return; }
+
+      btn.disabled = true;
+      msg.textContent = "Sending…";
+
+      const r = await fetch(`/api/orders/${orderId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ body })
+      });
+
+      btn.disabled = false;
+
+      if (!r.ok) { msg.textContent = "Failed to send. Try again."; return; }
+
+      ta.value = "";
+      msg.textContent = "Sent ✅";
+      setTimeout(() => msg.textContent = "", 1500);
+
+      await loadComments();
+    }
+
+    document.getElementById("sendCommentBtn")?.addEventListener("click", sendComment);
+
+    // init
+    loadOrder();
+    loadComments();
+  </script>
+</body>
+</html>

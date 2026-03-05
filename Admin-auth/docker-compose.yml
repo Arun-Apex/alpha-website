@@ -1,0 +1,52 @@
+services:
+  web:
+    build: .
+    container_name: admin-auth-web
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo:27017/adminauth
+      - NODE_ENV=production
+      - JWT_ACCESS_SECRET=Octopus@1919
+      - JWT_REFRESH_SECRET=Octopus@1919
+      - JWT_ACCESS_TTL=15m
+      - JWT_REFRESH_TTL=14d
+      - OWNER_USER=owner
+      - OWNER_PASS=Owner@12345
+
+      # OMS Postgres (same DB used by oms_auth)
+      - OMS_DB_HOST=n8n_postgres
+      - OMS_DB_PORT=5432
+      - OMS_DB_NAME=oms
+      - OMS_DB_USER=n8n
+      - OMS_DB_PASSWORD=Octopus@1919
+
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    networks:
+      - admin_auth_net
+      - n8n_net
+
+  mongo:
+    image: mongo:7
+    container_name: admin-auth-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - admin_auth_mongo:/data/db
+    restart: unless-stopped
+    networks:
+      - admin_auth_net
+
+volumes:
+  admin_auth_mongo:
+
+networks:
+  admin_auth_net:
+    driver: bridge
+
+  n8n_net:
+    external: true
+    name: n8n_default

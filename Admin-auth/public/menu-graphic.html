@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Graphic Menu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/menu.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">∞</div>
+      <div class="title">Octopus Media</div>
+    </div>
+
+    <button class="icon-btn" id="btnBell" aria-label="Notifications">
+      🔔
+    </button>
+  </div>
+
+  <div class="heroCard">
+    <div class="heroRow">
+      <div class="avatar">
+        <span id="avatarFallback">O</span>
+        <img id="avatarImg" class="hidden" alt="avatar" />
+      </div>
+
+      <div class="heroText">
+        <div class="hello">Hello, <span id="helloName">-</span></div>
+        <div class="badges">
+          <span class="badge" id="rolePill">-</span>
+          <span class="badge mono">ID: <span id="userId">-</span></span>
+        </div>
+      </div>
+
+      <button class="icon-btn" id="btnLogout" title="Logout">⎋</button>
+    </div>
+  </div>
+
+  <div class="sectionTitle">QUICK ACTIONS</div>
+  <div class="grid2">
+    <div class="actionCard" id="actApprovals">
+      <div class="actionIcon">📍</div>
+      <div class="actionTitle">Approvals</div>
+      <div class="actionSub">Approvals page</div>
+    </div>
+
+    <div class="actionCard" id="actOrders">
+      <div class="actionIcon">🚚</div>
+      <div class="plusFab" id="actCreate" no>＋</div>
+      <div class="actionTitle">Orders</div>
+      <div class="actionSub">Order details</div>
+    </div>
+  </div>
+
+  no
+
+  <div class="jobsHeader">
+    <div class="label">CURRENT JOBS</div>
+    <a href="/admin/app.html">View Details</a>
+  </div>
+
+  <div class="jobCard">
+    <div class="jobTop">
+      <div>
+        <div class="jobMeta">ACTIVE PROJECT</div>
+        <div class="jobNo" id="jobNo">-</div>
+      </div>
+      <div class="pill" id="jobPill">-</div>
+    </div>
+
+    <div class="steps" aria-hidden="true">
+      <div class="stepDot active"></div>
+      <div class="stepLine active"></div>
+      <div class="stepDot active"></div>
+      <div class="stepLine"></div>
+      <div class="stepDot"></div>
+      <div class="stepLine"></div>
+      <div class="stepDot"></div>
+      <div class="stepLine"></div>
+      <div class="stepDot"></div>
+    </div>
+
+    <div class="stepLabels">
+      <span>Order</span>
+      <span>Design</span>
+      <span>Process</span>
+      <span>Shipped</span>
+      <span>Deliver</span>
+    </div>
+
+    <div class="stageTitle" id="stageTitle">-</div>
+    <div class="stageDesc" id="stageDesc">-</div>
+
+    <div class="eta">
+      📅 <span id="etaText">-</span>
+    </div>
+  </div>
+
+  <div class="smallLink">
+    OCTOPUS PRODUCTION SYSTEM V1.0
+  </div>
+
+</div>
+
+<div class="navbar">
+  <div class="navInner">
+    <div class="navItem active" id="navHome">🏠 Home</div>
+    <div class="navItem" id="navOrders">📄 Orders</div>
+    <div class="navItem" id="navLogout">⎋ Logout</div>
+  </div>
+</div>
+
+<script src="./js/menu-ui.js"></script>
+</body>
+</html>

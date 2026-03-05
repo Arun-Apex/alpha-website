@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Octopus Media — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+         :root {
+            --bg: #f6f8fb;
+            --card: #fff;
+            --text: #101828;
+            --muted: #667085;
+            --primary: #2563eb;
+            --primary2: #1d4ed8;
+            --shadow: 0 10px 30px rgba(16, 24, 40, .08);
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            background: var(--bg);
+            color: var(--text)
+        }
+        
+        .wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 16px 16px 88px
+        }
+        
+        .hero {
+            background: radial-gradient(1200px 500px at 10% 0%, #dbeafe 0%, rgba(219, 234, 254, 0) 60%), linear-gradient(135deg, #e9d5ff 0%, #dbeafe 45%, #c7f9f1 100%);
+            border-radius: 26px;
+            padding: 18px 16px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-top {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+        
+        .logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+            font-weight: 800;
+            color: #111;
+        }
+        
+        .brand {
+            font-weight: 700
+        }
+        
+        .bell {
+            margin-left: auto;
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .7);
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+        
+        .hello-card {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 16px
+        }
+        
+        .hello-avatar img {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #eee;
+            border: 1px solid rgba(255, 255, 255, .6);
+        }
+        
+        .hello-text h2 {
+            font-size: 22px;
+            margin: 0
+        }
+        
+        .hello-text p {
+            margin: 2px 0 0;
+            color: rgba(16, 24, 40, .7);
+            font-size: 13px
+        }
+        
+        .hint {
+            display: none;
+            margin-top: 12px;
+            background: rgba(255, 255, 255, .75);
+            border: 1px solid rgba(229, 231, 235, .9);
+            border-radius: 16px;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #92400e;
+        }
+        
+        .hint a {
+            color: #92400e;
+            font-weight: 800;
+            text-decoration: underline
+        }
+        
+        .section-title {
+            margin: 18px 4px 10px;
+            font-size: 11px;
+            letter-spacing: .12em;
+            color: #98a2b3;
+            font-weight: 700
+        }
+        
+        .layout {
+            display: block
+        }
+        
+        .cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+        
+        .card {
+            background: var(--card);
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: 0 10px 24px rgba(16, 24, 40, .06);
+            border: 1px solid rgba(229, 231, 235, .7);
+        }
+        
+        .card h3 {
+            margin: 10px 0 4px;
+            font-size: 14px
+        }
+        
+        .card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.4
+        }
+        
+        .cardLink {
+            display: block;
+            text-decoration: none;
+            color: inherit
+        }
+        
+        .clickable {
+            cursor: pointer
+        }
+        
+        .clickable:hover {
+            transform: translateY(-1px);
+            transition: .12s ease;
+            box-shadow: 0 14px 28px rgba(16, 24, 40, .08)
+        }
+        
+        .icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f2f4f7;
+            border: 1px solid #e5e7eb
+        }
+        /* My Order card header */
+        
+        .cardHead {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px
+        }
+        
+        .cardHeadLeft {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px
+        }
+        
+        .smallMuted {
+            color: #98a2b3;
+            font-size: 12px
+        }
+        
+        .plusBtn {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f2f4f7;
+            border: 1px solid #e5e7eb;
+            color: #111;
+            text-decoration: none;
+            font-weight: 900;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+        
+        .plusBtn:hover {
+            background: #e9edf5
+        }
+        /* Progress */
+        
+        .progress {
+            background: var(--card);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 10px 24px rgba(16, 24, 40, .06);
+            border: 2px dashed #f87171;
+        }
+        
+        .progressHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px
+        }
+        
+        .progressHeader h2 {
+            margin: 0;
+            font-size: 18px
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 12px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px
+        }
+        
+        .box {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            background: #f2f4f7;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+        /* Active projects mini cards */
+        
+        .projectCard {
+            background: #fff;
+            border: 1px solid rgba(229, 231, 235, .7);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 10px 24px rgba(16, 24, 40, .06);
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        .projectTop {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: flex-start
+        }
+        
+        .projectNo {
+            font-weight: 800
+        }
+        
+        .projectMeta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px
+        }
+        
+        .badgePill {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fef3c7;
+            color: #92400e;
+            white-space: nowrap;
+        }
+        
+        .tl {
+            margin-top: 10px
+        }
+        
+        .tlRow {
+            display: flex;
+            justify-content: space-between;
+            gap: 6px
+        }
+        
+        .tlStep {
+            flex: 1;
+            text-align: center;
+            font-size: 10px;
+            color: #98a2b3;
+            font-weight: 800
+        }
+        
+        .tlDots {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            position: relative
+        }
+        
+        .tlDots::before {
+            content: "";
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            top: 50%;
+            height: 3px;
+            background: #e5e7eb;
+            transform: translateY(-50%);
+            border-radius: 99px;
+        }
+        
+        .dotMini {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            position: relative;
+            z-index: 1;
+            border: 2px solid #fff;
+        }
+        
+        .dotMini.on {
+            background: var(--primary2)
+        }
+        
+        .dotMini.done {
+            background: #22c55e
+        }
+        /* Help */
+        
+        .help {
+            margin-top: 14px;
+            background: linear-gradient(135deg, #111827 0%, #0b1220 100%);
+            color: #fff;
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .help h3 {
+            margin: 0 0 6px
+        }
+        
+        .help p {
+            margin: 0 0 14px;
+            color: rgba(255, 255, 255, .75);
+            font-size: 12px
+        }
+        
+        .help .btn2 {
+            display: inline-flex;
+            padding: 10px 16px;
+            border-radius: 14px;
+            background: rgba(37, 99, 235, .95);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        
+        .help::after {
+            content: "";
+            position: absolute;
+            right: -30px;
+            bottom: -30px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .06);
+        }
+        
+        @media (min-width: 900px) {
+            .wrap {
+                padding: 26px 18px 26px
+            }
+            .layout {
+                display: grid;
+                grid-template-columns: 1.3fr .9fr;
+                gap: 18px
+            }
+            .hero {
+                padding: 22px
+            }
+            .hello-text h2 {
+                font-size: 26px
+            }
+        }
+		
+		.bell { position: relative; }
+		.bell-badge{
+		position:absolute;
+		top:-6px; right:-6px;
+		min-width:18px; height:18px;
+		padding:0 5px;
+		border-radius:999px;
+		background:#ef4444;
+		color:#fff;
+		font-size:11px;
+		line-height:18px;
+		font-weight:800;
+		text-align:center;
+		border:2px solid rgba(255,255,255,.9);
+		}
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="layout">
+            <div>
+                <div class="hero">
+                    <div class="hero-top">
+                        <div class="logo">O</div>
+                        <div class="brand">Octopus Media</div>
+                        <div class="bell" title="Notifications">
+						🔔
+						<span id="bellBadge" class="bell-badge" style="display:none;"></span>
+					</div>
+                    </div>
+
+                    <div class="hello-card">
+                        <div class="hello-avatar">
+                            <img id="userAvatar" src="/default-avatar.png" alt="User Avatar">
+                        </div>
+                        <div class="hello-text">
+                            <h2>Hello <span id="userName">...</span></h2>
+                            <p>Let's get you started.</p>
+                        </div>
+                    </div>
+
+                    <!-- Only a hint, NOT redirect -->
+                    <div id="profileHint" class="hint">
+                        Your Address Info is not complete. Please update it in
+                        <a href="/app/address/">Address Info</a>.
+                    </div>
+                </div>
+
+                <div class="section-title">QUICK ACTIONS</div>
+                <div class="cards">
+                    <a class="cardLink" href="/app/address/">
+                        <div class="card clickable">
+                            <div class="icon">📍</div>
+                            <h3>Address Info</h3>
+                            <p>Add your shipping and billing details</p>
+                        </div>
+                    </a>
+
+                    <!-- My Order card (click card => /app/orders/ only when orders exist; + => always new order) -->
+                    <div id="myOrderCard" class="card clickable" role="button" tabindex="0">
+                        <div class="cardHead">
+                            <div class="cardHeadLeft">
+                                <div class="icon">🚚</div>
+                                <div>
+                                    <h3 style="margin:0;">My Order</h3>
+                                    <p id="myOrderHint" class="smallMuted" style="margin-top:4px;">Checking your orders…</p>
+                                </div>
+                            </div>
+
+                            <!-- <a class="plusBtn" href="/app/orders/newindex.html" title="Create New Order" onclick="event.stopPropagation();">
+                +
+              </a> -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">CURRENT PROGRESS</div>
+                <div class="progress">
+                    <div class="center" id="activeEmpty">
+                        <div class="box">📄</div>
+                        <h2 style="margin:0;">No Active Projects</h2>
+                        <p style="margin:0;color:var(--muted);font-size:12px;max-width:260px;">
+                            Your production progress will appear here once you place an order.
+                        </p>
+                        <!--<a class="btn" href="/app/orders/new/index.html">Create First Order</a> -->
+                    </div>
+
+                    <div id="activeList" style="display:none;">
+                        <div class="progressHeader">
+                            <h2>Active Projects</h2>
+                            <a class="btn" href="/app/orders/">View All</a>
+                        </div>
+                        <div id="activeProjectsContainer"></div>
+                    </div>
+                </div>
+
+                <div class="help">
+                    <h3>Need assistance?</h3>
+                    <p>Your dedicated agent is available 24/7</p>
+                    <a class="btn2" href="#">Start Chat</a>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">ACCOUNT</div>
+                <div class="card">
+                    <h3>Signed in</h3>
+                    <p id="me" class="smallMuted">Loading profile…</p>
+                    <div style="height:10px"></div>
+                    <button id="logoutBtn" class="btn" type="button">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+  let HAS_ORDERS = false;
+  let bellTimer = null;
+
+  async function initUserUI() {
+    const r = await fetch("/api/me", { credentials: "include" });
+    if (!r.ok) {
+      location.href = "/";
+      return false;
+    }
+
+    const data = await r.json();
+    const user = data.user || {};
+
+    document.getElementById("userName").textContent = user.display_name || "User";
+    document.getElementById("me").textContent = user.display_name || "Signed in";
+
+    const avatar = document.getElementById("userAvatar");
+    avatar.src = user.picture_url || "/default-avatar.png";
+    avatar.onerror = () => { avatar.src = "/default-avatar.png"; };
+
+    return true;
+  }
+
+  async function showProfileHintIfIncomplete() {
+    const r = await fetch("/api/customer/profile/status", { credentials: "include" });
+    if (!r.ok) return;
+
+    const data = await r.json();
+    if (data && data.complete === false) {
+      const hint = document.getElementById("profileHint");
+      if (hint) hint.style.display = "block";
+    }
+  }
+
+  async function logout() {
+    await fetch("/auth/logout", { method: "POST", credentials: "include" });
+    location.href = "/";
+  }
+
+  function prettyStatus(s) {
+    const map = {
+      pending_admin: "PENDING ADMIN",
+      in_design: "IN DESIGN",
+      in_production: "IN PRODUCTION",
+      shipped: "SHIPPED",
+      completed: "COMPLETED",
+      cancelled: "CANCELLED",
+    };
+    return map[s] || (s || "").toUpperCase();
+  }
+
+  function statusStepIndex(s) {
+    if (s === "pending_admin") return 0;
+    if (s === "in_design") return 1;
+    if (s === "in_production") return 2;
+    if (s === "shipped") return 3;
+    if (s === "completed") return 4;
+    return 0;
+  }
+
+  function renderTimeline(status) {
+    const idx = statusStepIndex(status);
+    const labels = ["Order", "Design", "Process", "Shipped", "Delivered"];
+
+    const dots = labels.map((_, i) => {
+      if (i < idx) return `<div class="dotMini done"></div>`;
+      if (i === idx) return `<div class="dotMini on"></div>`;
+      return `<div class="dotMini"></div>`;
+    }).join("");
+
+    const steps = labels.map(l => `<div class="tlStep">${l}</div>`).join("");
+
+    return `
+      <div class="tl">
+        <div class="tlRow">${steps}</div>
+        <div class="tlDots">${dots}</div>
+      </div>
+    `;
+  }
+
+  async function loadOrdersForDashboard() {
+    const r = await fetch("/api/orders", { credentials: "include" });
+    if (!r.ok) return;
+
+    const j = await r.json();
+    const orders = j.orders || [];
+    HAS_ORDERS = orders.length > 0;
+
+    const hint = document.getElementById("myOrderHint");
+    if (hint) {
+      if (!orders.length) {
+        hint.textContent = "No orders yet — please contact our admin team";
+      } else {
+        const latest = orders.slice(0, 3).map(o => o.job_no).filter(Boolean).join(", ");
+        hint.textContent = latest ? `Recent: ${latest}` : "View your orders";
+      }
+    }
+
+    const card = document.getElementById("myOrderCard");
+    if (card) {
+      card.style.cursor = HAS_ORDERS ? "pointer" : "not-allowed";
+
+      card.onclick = () => {
+        if (!HAS_ORDERS) return;
+        location.href = "/app/orders/";
+      };
+
+      card.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          if (!HAS_ORDERS) return;
+          location.href = "/app/orders/";
+        }
+      };
+    }
+
+    const active = orders.filter(o => !["completed", "cancelled"].includes(o.status));
+
+    const empty = document.getElementById("activeEmpty");
+    const list = document.getElementById("activeList");
+    const container = document.getElementById("activeProjectsContainer");
+    if (!empty || !list || !container) return;
+
+    if (!active.length) {
+      empty.style.display = "flex";
+      list.style.display = "none";
+      return;
+    }
+
+    empty.style.display = "none";
+    list.style.display = "block";
+
+    container.innerHTML = active.slice(0, 3).map(o => `
+      <div class="projectCard" onclick="location.href='/app/orders/view.html?id=${o.id}'">
+        <div class="projectTop">
+          <div>
+            <div class="projectNo">${o.job_no || ""}</div>
+            <div class="projectMeta">${(o.project_name || "")} • ${(o.job_type || "")}</div>
+          </div>
+          <div class="badgePill">${prettyStatus(o.status)}</div>
+        </div>
+        ${renderTimeline(o.status)}
+      </div>
+    `).join("");
+  }
+
+  /* =========================
+     🔔 Notifications (Bell)
+     ========================= */
+
+  function setBellCount(count) {
+    const badge = document.getElementById("bellBadge");
+    if (!badge) return;
+
+    if (count > 0) {
+      badge.style.display = "inline-block";
+      badge.textContent = count > 99 ? "99+" : String(count);
+    } else {
+      badge.style.display = "none";
+      badge.textContent = "";
+    }
+  }
+
+  async function refreshBell() {
+    try {
+      const r = await fetch("/api/notifications/unread-count", { credentials: "include" });
+      if (!r.ok) return;
+      const j = await r.json();
+      setBellCount(j.count || 0);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  async function markBellRead() {
+    try {
+      await fetch("/api/notifications/mark-read", {
+        method: "POST",
+        credentials: "include"
+      });
+    } catch (e) {
+      // ignore
+    }
+    await refreshBell();
+  }
+
+  function setupBellClick() {
+    const bellBtn = document.getElementById("bellBtn"); // optional wrapper
+    const bellBadge = document.getElementById("bellBadge");
+    const target = bellBtn || (bellBadge ? bellBadge.parentElement : null);
+
+    if (!target) return;
+
+    target.style.cursor = "pointer";
+    target.addEventListener("click", async () => {
+      // For now: just mark read when user taps bell
+      await markBellRead();
+      // Later we can open a dropdown with /api/notifications/recent
+    });
+  }
+
+  function startBellPolling() {
+    if (bellTimer) clearInterval(bellTimer);
+    refreshBell();
+    bellTimer = setInterval(refreshBell, 15000);
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    const ok = await initUserUI();
+    if (!ok) return;
+
+    await showProfileHintIfIncomplete();
+    await loadOrdersForDashboard();
+
+    const btn = document.getElementById("logoutBtn");
+    if (btn) btn.addEventListener("click", logout);
+
+    setupBellClick();
+    startBellPolling();
+  });
+</script>
+</body>
+
+</html>

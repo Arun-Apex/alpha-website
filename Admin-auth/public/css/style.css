@@ -1,0 +1,182 @@
+:root{
+  --bg1:#f5f7ff;
+  --bg2:#ffffff;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#6b7280;
+  --muted2:#94a3b8;
+  --primary:#2f6bff;
+  --shadow: 0 12px 30px rgba(15, 23, 42, .08);
+  --shadow2: 0 6px 16px rgba(15, 23, 42, .08);
+  --radius: 18px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: "Noto Sans Thai", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--text);
+  background: linear-gradient(180deg, var(--bg1), var(--bg2));
+}
+
+.screen{
+  min-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:28px 14px;
+  position:relative;
+  overflow:hidden;
+}
+
+.bg-blob{
+  position:absolute;
+  filter: blur(60px);
+  opacity:.45;
+  pointer-events:none;
+}
+.bg-blob-1{
+  width:360px; height:360px;
+  left:-120px; top:-120px;
+  background: radial-gradient(circle at 30% 30%, #2f6bff, transparent 60%);
+}
+.bg-blob-2{
+  width:420px; height:420px;
+  right:-160px; bottom:-160px;
+  background: radial-gradient(circle at 60% 60%, #7c3aed, transparent 60%);
+}
+
+.hero{
+  width: min(420px, 100%);
+  position:relative;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:8px 6px 18px;
+}
+
+.brand-logo{
+  width:44px; height:44px;
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  background: rgba(47,107,255,.12);
+  color: var(--primary);
+  font-weight:800;
+  box-shadow: var(--shadow2);
+}
+
+.brand-name{
+  font-weight:800;
+  letter-spacing:.2px;
+  font-size:18px;
+}
+
+.brand-sub{
+  margin-top:4px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  line-height:1.2;
+}
+.brand-sub .th{ font-size:13px; color:var(--muted); }
+.brand-sub .en{ font-size:12px; color:var(--muted2); }
+
+.cards{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.role-card{
+  width:100%;
+  border:0;
+  background:var(--card);
+  border-radius: var(--radius);
+  padding:14px 14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow: var(--shadow);
+  cursor:pointer;
+  transition: transform .08s ease, box-shadow .12s ease;
+  text-align:left;
+}
+
+.role-card:active{ transform: scale(.99); }
+.role-card:hover{ box-shadow: 0 14px 34px rgba(15, 23, 42, .10); }
+
+.role-icon{
+  width:44px; height:44px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  background: rgba(47,107,255,.10);
+  color: var(--primary);
+  flex: 0 0 auto;
+}
+
+.role-text{ flex: 1 1 auto; min-width:0; }
+
+.role-title{
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  line-height:1.2;
+}
+.role-title .th{
+  font-weight:700;
+  font-size:15px;
+}
+.role-title .en{
+  font-size:12px;
+  color: var(--muted);
+}
+
+.role-desc{
+  margin-top:6px;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  line-height:1.25;
+}
+.role-desc .th{ font-size:12.5px; color: var(--muted); }
+.role-desc .en{ font-size:11.5px; color: var(--muted2); }
+
+.role-arrow{
+  font-size:26px;
+  color:#94a3b8;
+  margin-left:6px;
+  flex: 0 0 auto;
+}
+
+.help{
+  text-align:center;
+  margin-top:18px;
+}
+.help-link{
+  text-decoration:none;
+  display:inline-flex;
+  flex-direction:column;
+  gap:2px;
+  color: var(--primary);
+  font-weight:600;
+  font-size:13px;
+}
+.help-link .en{
+  font-weight:500;
+  font-size:12px;
+  color: #64748b;
+}
+
+.footer{
+  text-align:center;
+  margin-top:22px;
+  color:#94a3b8;
+  font-size:11px;
+  letter-spacing:.2px;
+}

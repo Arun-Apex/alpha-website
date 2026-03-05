@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Job Details</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#fff; --text:#101828; --muted:#667085; --border:#e5e7eb;
+      --shadow:0 10px 24px rgba(16,24,40,.06);
+      --primary:#2563eb; --primaryBg:rgba(37,99,235,.10);
+      --ok:#16a34a; --warn:#f59e0b; --bad:#ef4444;
+      --pillBg:#f3f4f6;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,"Noto Sans Thai",system-ui;background:var(--bg);color:var(--text)}
+    a{color:var(--primary);text-decoration:none;font-weight:800}
+
+    .wrap{max-width:1200px;margin:0 auto;padding:18px 16px 40px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .crumb{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+    .crumb a{font-weight:800}
+    .who{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);
+      border-radius:999px;padding:8px 10px;box-shadow:var(--shadow)}
+    .avatar{width:32px;height:32px;border-radius:999px;object-fit:cover;background:#e5e7eb}
+    .who .name{font-weight:800;font-size:13px}
+    .who .role{font-size:12px;color:var(--muted)}
+
+    .hero{background:linear-gradient(135deg,#e9d5ff 0%,#dbeafe 45%,#c7f9f1 100%);border-radius:22px;padding:16px;box-shadow:var(--shadow)}
+    .hero h1{margin:0;font-size:18px}
+    .hero .sub{margin:6px 0 0;color:rgba(16,24,40,.7);font-size:13px}
+
+    .layout{display:grid;grid-template-columns:1.3fr .9fr;gap:18px;margin-top:14px}
+    @media(max-width:980px){ .layout{grid-template-columns:1fr} }
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:14px}
+    .sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .sectionTitle h2{margin:0;font-size:14px}
+    .muted{color:var(--muted);font-size:12px}
+
+    .metaGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:520px){ .metaGrid{grid-template-columns:1fr} }
+    .kv{border:1px solid var(--border);border-radius:14px;padding:10px;background:#fff}
+    .k{font-size:11px;color:#98a2b3;letter-spacing:.08em;text-transform:uppercase}
+    .v{margin-top:4px;font-weight:800;font-size:13px}
+
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:var(--pillBg);
+      border:1px solid rgba(16,24,40,.08);font-weight:800;font-size:11px;white-space:nowrap}
+    .dot{width:8px;height:8px;border-radius:999px;background:#64748b;box-shadow:0 0 0 3px rgba(100,116,139,.12)}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tabBtn{
+      border:1px solid var(--border);
+      background:#fff;
+      padding:8px 10px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:12px;
+      color:#111827;
+    }
+    .tabBtn.active{border-color:rgba(37,99,235,.35);background:var(--primaryBg);color:#0f172a}
+
+    .commentList{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .msg{border:1px solid var(--border);border-radius:16px;padding:10px;background:#fff}
+    .msgTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .msgName{font-weight:800;font-size:13px}
+    .msgMeta{font-size:12px;color:var(--muted)}
+    .msgBody{margin-top:8px;font-size:13px;white-space:pre-wrap;line-height:1.45}
+    .msgActions{margin-top:8px;display:flex;gap:8px;align-items:center}
+    .btn{
+      border:1px solid #d1d5db;border-radius:12px;padding:9px 11px;font-weight:800;background:#fff;cursor:pointer;font-size:12px
+    }
+    .btnPrimary{border-color:rgba(37,99,235,.35);background:var(--primaryBg)}
+    textarea,input{
+      width:100%;
+      border:1px solid #d1d5db;border-radius:14px;padding:10px 12px;font-size:13px;background:#fff;
+      font-family:inherit
+    }
+    textarea{min-height:92px;resize:vertical}
+
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .right{margin-left:auto}
+
+    .attachments{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+    .fileLink{font-size:12px}
+    .fileLink a{font-weight:800}
+
+    .hint{margin-top:8px;font-size:12px;color:#98a2b3}
+    .warn{color:#b45309}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="topbar">
+      <div class="crumb">
+        <a href="/app/">Home</a>
+        <span>›</span>
+        <a href="/app/orders/">Orders</a>
+        <span>›</span>
+        <span id="crumbJob">Job</span>
+      </div>
+
+      <div class="who">
+        <img id="meAvatar" class="avatar" alt="me" />
+        <div>
+          <div class="name" id="meName">User</div>
+          <div class="role" id="meRole">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1 id="title">Job Details</h1>
+      <div class="sub" id="subtitle">Loading…</div>
+    </div>
+
+    <div class="layout">
+
+      <!-- LEFT: comments / internal memo -->
+      <div class="card">
+        <div class="sectionTitle">
+          <h2>Discussion</h2>
+          <div class="tabs" id="tabs"></div>
+        </div>
+
+        <div id="panelPublic">
+          <div class="muted">Visible to customer and staff.</div>
+          <div class="commentList" id="publicList"></div>
+
+          <div style="margin-top:12px">
+            <div class="row">
+              <div style="font-weight:800">Add comment</div>
+              <div class="right muted" id="publicRule"></div>
+            </div>
+            <textarea id="publicBody" placeholder="Type your message…"></textarea>
+            <div class="row" style="margin-top:8px">
+              <button class="btn btnPrimary" id="btnPublicSend">Send</button>
+              <span class="muted" id="publicSendInfo"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="panelInternal" style="display:none">
+          <div class="muted warn">Internal memo (staff only). Customer cannot see this.</div>
+          <div class="commentList" id="internalList"></div>
+
+          <div style="margin-top:12px">
+            <div style="font-weight:800">Add internal memo</div>
+            <textarea id="internalBody" placeholder="Internal notes, handover, approvals…"></textarea>
+
+            <div style="margin-top:8px">
+              <input id="internalFiles" type="file" multiple />
+              <div class="hint">You can attach images/PDF. Max 10 files, 25MB each.</div>
+            </div>
+
+            <div class="row" style="margin-top:8px">
+              <button class="btn btnPrimary" id="btnInternalSend">Send</button>
+              <span class="muted" id="internalSendInfo"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: job meta + location -->
+      <div class="card">
+        <div class="sectionTitle">
+          <h2>Job Info</h2>
+          <span class="muted" id="jobMetaTime">—</span>
+        </div>
+
+        <div class="metaGrid">
+          <div class="kv">
+            <div class="k">Job No</div>
+            <div class="v" id="jobNo">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Status</div>
+            <div class="v"><span class="pill"><span class="dot" id="statusDot"></span><span id="jobStatus">—</span></span></div>
+          </div>
+          <div class="kv">
+            <div class="k">Project</div>
+            <div class="v" id="jobProject">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Type</div>
+            <div class="v" id="jobType">—</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="row">
+            <div style="font-weight:800">Location (Google Maps link)</div>
+            <span class="right muted" id="locRule"></span>
+          </div>
+          <input id="locationUrl" placeholder="Paste Google Maps link here…" />
+          <div class="row" style="margin-top:8px">
+            <button class="btn btnPrimary" id="btnLocSave">Save</button>
+            <a class="btn" id="btnLocOpen" href="#" target="_blank" rel="noreferrer" style="display:none">Open Map</a>
+            <span class="muted" id="locInfo"></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+  const els = {
+    crumbJob: document.getElementById("crumbJob"),
+    title: document.getElementById("title"),
+    subtitle: document.getElementById("subtitle"),
+
+    meName: document.getElementById("meName"),
+    meRole: document.getElementById("meRole"),
+    meAvatar: document.getElementById("meAvatar"),
+
+    tabs: document.getElementById("tabs"),
+    panelPublic: document.getElementById("panelPublic"),
+    panelInternal: document.getElementById("panelInternal"),
+
+    publicList: document.getElementById("publicList"),
+    internalList: document.getElementById("internalList"),
+    publicBody: document.getElementById("publicBody"),
+    internalBody: document.getElementById("internalBody"),
+    internalFiles: document.getElementById("internalFiles"),
+    btnPublicSend: document.getElementById("btnPublicSend"),
+    btnInternalSend: document.getElementById("btnInternalSend"),
+    publicSendInfo: document.getElementById("publicSendInfo"),
+    internalSendInfo: document.getElementById("internalSendInfo"),
+
+    jobMetaTime: document.getElementById("jobMetaTime"),
+    jobNo: document.getElementById("jobNo"),
+    jobStatus: document.getElementById("jobStatus"),
+    statusDot: document.getElementById("statusDot"),
+    jobProject: document.getElementById("jobProject"),
+    jobType: document.getElementById("jobType"),
+
+    locationUrl: document.getElementById("locationUrl"),
+    btnLocSave: document.getElementById("btnLocSave"),
+    btnLocOpen: document.getElementById("btnLocOpen"),
+    locInfo: document.getElementById("locInfo"),
+    locRule: document.getElementById("locRule"),
+    publicRule: document.getElementById("publicRule"),
+  };
+
+  function esc(s){ return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+  function fmtTs(ts){
+    if(!ts) return "—";
+    const d = new Date(ts);
+    if(isNaN(d.getTime())) return "—";
+    return d.toLocaleString();
+  }
+  function statusColor(status){
+    const s = String(status||"").toLowerCase();
+    if(s.includes("done") || s.includes("complete") || s.includes("finished")) return "#16a34a";
+    if(s.includes("pending") || s.includes("wait") || s.includes("hold")) return "#f59e0b";
+    if(s.includes("reject") || s.includes("cancel")) return "#ef4444";
+    return "#64748b";
+  }
+
+  function getJobKey(){
+    const u = new URL(location.href);
+    return u.searchParams.get("jobKey") || "";
+  }
+
+  async function apiGet(url){
+    const r = await fetch(url, { credentials:"include" });
+    const j = await r.json().catch(()=>null);
+    if(!r.ok) throw new Error(j?.message || j?.error || ("HTTP " + r.status));
+    return j;
+  }
+  async function apiPost(url, body){
+    const r = await fetch(url, {
+      method:"POST",
+      credentials:"include",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(body || {})
+    });
+    const j = await r.json().catch(()=>null);
+    if(!r.ok) throw new Error(j?.message || j?.error || ("HTTP " + r.status));
+    return j;
+  }
+  async function apiPatch(url, body){
+    const r = await fetch(url, {
+      method:"PATCH",
+      credentials:"include",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(body || {})
+    });
+    const j = await r.json().catch(()=>null);
+    if(!r.ok) throw new Error(j?.message || j?.error || ("HTTP " + r.status));
+    return j;
+  }
+
+  function renderComments(listEl, comments, perms){
+    listEl.innerHTML = comments.map(c => {
+      const files = (c.attachments||[]).map(a => {
+        const href = "/uploads/" + encodeURIComponent(a.storage_path);
+        return `<div class="fileLink">📎 <a href="${href}" target="_blank" rel="noreferrer">${esc(a.file_name)}</a></div>`;
+      }).join("");
+
+      const editBtn = perms?.canEditComments
+        ? `<button class="btn" data-edit="${c.id}">Edit</button>`
+        : "";
+
+      return `
+        <div class="msg">
+          <div class="msgTop">
+            <div>
+              <div class="msgName">${esc(c.author_name || c.author_role || "User")}</div>
+              <div class="msgMeta">${fmtTs(c.created_at)}${c.updated_at ? " • edited " + fmtTs(c.updated_at) : ""}</div>
+            </div>
+            <div>${editBtn}</div>
+          </div>
+          <div class="msgBody" id="body-${c.id}">${esc(c.body || "")}</div>
+          ${files ? `<div class="attachments">${files}</div>` : ""}
+        </div>
+      `;
+    }).join("") || `<div class="muted" style="padding:10px">No messages yet.</div>`;
+
+    // Edit handler (owner/superadmin)
+    if (perms?.canEditComments) {
+      listEl.querySelectorAll("[data-edit]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-edit");
+          const el = document.getElementById("body-" + id);
+          const current = el ? el.textContent : "";
+          const next = prompt("Edit comment:", current);
+          if (next == null) return;
+          try{
+            await apiPatch("/api/jobs/comments/" + encodeURIComponent(id), { body: next });
+            await loadAll();
+          }catch(e){
+            alert("Edit failed: " + e.message);
+          }
+        });
+      });
+    }
+  }
+
+  function setTabs(perms){
+    els.tabs.innerHTML = "";
+
+    const btnPublic = document.createElement("button");
+    btnPublic.className = "tabBtn active";
+    btnPublic.textContent = "Comments";
+    btnPublic.onclick = () => {
+      btnPublic.classList.add("active");
+      if(btnInternal) btnInternal.classList.remove("active");
+      els.panelPublic.style.display = "";
+      els.panelInternal.style.display = "none";
+    };
+    els.tabs.appendChild(btnPublic);
+
+    let btnInternal = null;
+    if (perms?.isStaff) {
+      btnInternal = document.createElement("button");
+      btnInternal.className = "tabBtn";
+      btnInternal.textContent = "Internal Memo";
+      btnInternal.onclick = () => {
+        btnInternal.classList.add("active");
+        btnPublic.classList.remove("active");
+        els.panelPublic.style.display = "none";
+        els.panelInternal.style.display = "";
+      };
+      els.tabs.appendChild(btnInternal);
+    } else {
+      els.panelInternal.style.display = "none";
+    }
+  }
+
+  async function loadMe(){
+    try{
+      const r = await fetch("/api/me", { credentials:"include" });
+      const j = await r.json().catch(()=>null);
+      if(j?.ok && j.user){
+        els.meName.textContent = j.user.display_name || "User";
+        els.meRole.textContent = j.user.role || "—";
+        els.meAvatar.src = j.user.picture_url || "/default-avatar.png";
+        els.meAvatar.onerror = () => els.meAvatar.src = "/default-avatar.png";
+      }
+    }catch(e){}
+  }
+
+  async function loadAll(){
+    const jobKey = getJobKey();
+    if(!jobKey){
+      els.subtitle.textContent = "Missing jobKey in URL.";
+      return;
+    }
+
+    // Job header
+    const data = await apiGet("/api/jobs/" + encodeURIComponent(jobKey));
+    const job = data.job || {};
+    const perms = data.perms || {};
+
+    els.crumbJob.textContent = job.job_no || ("#" + job.id);
+    els.title.textContent = (job.job_no ? job.job_no + " • " : "") + (job.project_name || "Job");
+    els.subtitle.textContent = "Status and discussion for this job";
+    els.jobMetaTime.textContent = "Updated: " + fmtTs(job.updated_at);
+    els.jobNo.textContent = job.job_no || ("#" + job.id);
+    els.jobProject.textContent = job.project_name || "—";
+    els.jobType.textContent = job.job_type || "—";
+    els.jobStatus.textContent = job.status || "—";
+    const c = statusColor(job.status);
+    els.statusDot.style.background = c;
+    els.statusDot.style.boxShadow = `0 0 0 3px ${c}22`;
+
+    // Location
+    els.locationUrl.value = job.location_url || "";
+    const loc = (job.location_url || "").trim();
+    if(loc){
+      els.btnLocOpen.style.display = "";
+      els.btnLocOpen.href = loc;
+    } else {
+      els.btnLocOpen.style.display = "none";
+      els.btnLocOpen.href = "#";
+    }
+
+    els.locRule.textContent = perms.isStaff ? "Staff can edit" : "Customer can edit";
+    els.publicRule.textContent = perms.isStaff ? "Public / Customer-visible" : "Once submitted, cannot be edited";
+
+    // Tabs
+    setTabs(perms);
+
+    // Comments
+    const cRes = await apiGet("/api/jobs/" + encodeURIComponent(jobKey) + "/comments");
+    const all = cRes.comments || [];
+    const pub = all.filter(x => !x.is_internal);
+    const internal = all.filter(x => x.is_internal);
+
+    renderComments(els.publicList, pub, perms);
+    renderComments(els.internalList, internal, perms);
+
+    // Send public
+    els.btnPublicSend.onclick = async () => {
+      const body = (els.publicBody.value || "").trim();
+      if(!body) return;
+      els.btnPublicSend.disabled = true;
+      els.publicSendInfo.textContent = "Sending…";
+      try{
+        await apiPost("/api/jobs/" + encodeURIComponent(jobKey) + "/comments", { body, is_internal:false });
+        els.publicBody.value = "";
+        await loadAll();
+      }catch(e){
+        alert("Send failed: " + e.message);
+      }
+      els.btnPublicSend.disabled = false;
+      els.publicSendInfo.textContent = "";
+    };
+
+    // Save location
+    els.btnLocSave.onclick = async () => {
+      const location_url = (els.locationUrl.value || "").trim();
+      els.btnLocSave.disabled = true;
+      els.locInfo.textContent = "Saving…";
+      try{
+        await apiPatch("/api/jobs/" + encodeURIComponent(jobKey) + "/location", { location_url });
+        els.locInfo.textContent = "Saved";
+        await loadAll();
+      }catch(e){
+        alert("Save failed: " + e.message);
+        els.locInfo.textContent = "";
+      }
+      els.btnLocSave.disabled = false;
+    };
+
+    // Internal memo send (staff only)
+    els.btnInternalSend.onclick = async () => {
+      if(!perms.isStaff) return;
+
+      const body = (els.internalBody.value || "").trim();
+      const files = els.internalFiles.files || [];
+
+      if(!body && files.length === 0) return;
+
+      els.btnInternalSend.disabled = true;
+      els.internalSendInfo.textContent = "Sending…";
+
+      try{
+        const form = new FormData();
+        form.append("body", body);
+        for(const f of files) form.append("files", f);
+
+        const r = await fetch("/api/jobs/" + encodeURIComponent(jobKey) + "/internal", {
+          method:"POST",
+          credentials:"include",
+          body: form
+        });
+        const j = await r.json().catch(()=>null);
+        if(!r.ok) throw new Error(j?.message || j?.error || ("HTTP " + r.status));
+
+        els.internalBody.value = "";
+        els.internalFiles.value = "";
+        await loadAll();
+      }catch(e){
+        alert("Internal send failed: " + e.message);
+      }
+
+      els.btnInternalSend.disabled = false;
+      els.internalSendInfo.textContent = "";
+    };
+  }
+
+  loadMe();
+  loadAll();
+</script>
+</body>
+</html>
