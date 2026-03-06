@@ -3,231 +3,487 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Job Details (Admin)</title>
+  <title>Job Details</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet" />
+
   <style>
-    :root{ --bg:#f6f8fb; --card:#fff; --text:#101828; --muted:#667085; --border:#e5e7eb; --shadow:0 10px 24px rgba(16,24,40,.06); }
-    *{ box-sizing:border-box }
-    body{ margin:0; font-family:Inter,"Noto Sans Thai",system-ui; background:var(--bg); color:var(--text) }
-    .wrap{ max-width:1100px; margin:0 auto; padding:18px 16px 40px }
-    .hero{ background:linear-gradient(135deg,#e9d5ff 0%,#dbeafe 45%,#c7f9f1 100%); border-radius:22px; padding:16px; box-shadow:var(--shadow); display:flex; justify-content:space-between; align-items:center; gap:12px; }
-    .title{ font-size:18px; font-weight:900; margin:0 }
-    .sub{ margin:6px 0 0; color:rgba(16,24,40,.7); font-size:13px }
-    a{ color:#2563eb; text-decoration:none; font-weight:900 }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid rgba(37,99,235,.20);
-      background:#eef2ff; color:#1e40af;
-      font-weight:900; font-size:11px;
-      white-space:nowrap;
-    }
-    .pillDot{ width:8px;height:8px;border-radius:999px;background:#1e40af; box-shadow:0 0 0 3px rgba(30,64,175,.10) }
-    .grid{ margin-top:14px; display:grid; grid-template-columns: 1.3fr .7fr; gap:14px; }
-    @media (max-width: 920px){ .grid{ grid-template-columns:1fr; } }
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#101828;
+      --muted:#667085;
+      --border:#e5e7eb;
+      --shadow:0 10px 24px rgba(16,24,40,.06);
 
-    .card{ background:var(--card); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
-    .h{ font-size:12px; letter-spacing:.08em; color:#98a2b3; font-weight:900; margin:0 0 10px; }
-    .row{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap }
-    .muted{ color:var(--muted); font-size:12px }
-    textarea,input{ width:100%; border:1px solid #d1d5db; border-radius:12px; padding:10px 12px; font-size:13px; background:#fff; }
-    button{ border:1px solid #d1d5db; border-radius:12px; padding:10px 12px; font-weight:900; background:#fff; cursor:pointer; }
-    .btnPrimary{ background:#2563eb; border-color:#2563eb; color:#fff; }
-    .btnWarn{
-      border:1px solid rgba(202,138,4,.35);
-      background:#fefce8;
-      color:#92400e;
-      font-weight:900;
+      --blue:#2563eb;
+      --blue2:#1e40af;
+
+      --warnBg:#fef3c7;
+      --warnText:#92400e;
+      --warnBorder:rgba(202,138,4,.35);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:Inter,"Noto Sans Thai",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    a{ color:var(--blue); text-decoration:none; }
+
+    .wrap{
+      max-width:1100px;
+      margin:28px auto;
+      padding:0 18px 40px;
     }
 
-    .descBox{
-      white-space: pre-wrap;
-      line-height: 1.4;
-      font-size: 13px;
-      color: #101828;
-      background: #f8fafc;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 10px 12px;
-      min-height: 64px;
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
     }
-
-    /* comment bubble */
-    .comment{ display:flex; gap:10px; padding:8px 0; border-bottom:1px solid #eef2f7; }
-    .comment:last-child{ border-bottom:none; }
-    .avatar{ width:34px;height:34px;border-radius:999px; background:#eef2ff; border:1px solid #e5e7eb; object-fit:cover; flex:none; }
-    .cTop{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
-    .name{ font-weight:900; font-size:13px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .time{ color:#98a2b3; font-size:12px; white-space:nowrap; }
-    .text{ font-size:13px; white-space:pre-wrap; margin-top:4px; color:#101828; }
-
-    /* two windows */
-    .split{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
-    @media (max-width: 920px){ .split{ grid-template-columns:1fr; } }
-
-    .subCard{
+    .crumbs{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .crumbs a{ color:var(--blue); }
+    .btnBack{
+      border:1px solid var(--border);
       background:#fff;
-      border:1px solid #e5e7eb;
+      padding:8px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:600;
+      box-shadow:0 2px 10px rgba(16,24,40,.04);
+    }
+
+    .hero{
+      background:linear-gradient(90deg, #e9d5ff 0%, #dbeafe 55%, #ccfbf1 100%);
+      border-radius:18px;
+      padding:18px 18px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.55);
+      margin-bottom:14px;
+    }
+    .heroTitle{
+      font-size:20px;
+      font-weight:800;
+      margin:0 0 6px 0;
+    }
+    .heroSub{
+      color:rgba(17,24,39,.75);
+      margin:0;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:16px;
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+
+    .cardHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .hTitle{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.12em;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid rgba(37,99,235,.20);
+      background:#eef2ff;
+      color:#1e40af;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .pillDot{
+      width:8px; height:8px; border-radius:50%;
+      background:#1e40af;
+      display:inline-block;
+    }
+
+    .twoCols{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    .panel{
+      border:1px solid var(--border);
+      border-radius:14px;
       padding:12px;
-      box-shadow:0 6px 14px rgba(16,24,40,.05);
-      min-width:0;
+      background:#fff;
     }
-    .subHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-    .subTitle{ font-weight:900; font-size:13px; color:#101828; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-
-    .badgePublic{
-      display:inline-flex; align-items:center;
-      padding:4px 8px; border-radius:999px;
-      font-size:11px; font-weight:900;
-      color:#155e75; background:#ecfeff; border:1px solid rgba(8,145,178,.22);
+    .panelTitleRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .panelTitle{
+      font-weight:900;
+      font-size:14px;
+      margin:0;
+    }
+    .badge{
+      font-size:11px;
+      font-weight:900;
+      padding:5px 10px;
+      border-radius:999px;
+      border:1px solid rgba(37,99,235,.25);
+      background:#eef2ff;
+      color:#1e40af;
       white-space:nowrap;
     }
-    .badgeInternal{
-      display:inline-flex; align-items:center;
-      padding:4px 8px; border-radius:999px;
-      font-size:11px; font-weight:900;
-      color:#92400e; background:#fefce8; border:1px solid rgba(202,138,4,.25);
-      white-space:nowrap;
+    .badgeWarn{
+      border:1px solid var(--warnBorder);
+      background:var(--warnBg);
+      color:var(--warnText);
     }
 
-    .commentsBox{
-      border:1px solid #eef2f7;
-      border-radius:12px;
-      padding:10px;
-      background:#fafafa;
-      max-height:340px;
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:84px;
+      max-height:280px;
       overflow:auto;
+      padding-right:6px;
+    }
+
+    .comment{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+    }
+    .avatar{
+      width:36px; height:36px;
+      border-radius:50%;
+      object-fit:cover;
+      border:1px solid rgba(0,0,0,.06);
+      flex:0 0 auto;
+    }
+    .cTop{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:baseline;
+    }
+    .name{ font-weight:900; font-size:13px; }
+    .time{ color:var(--muted); font-size:12px; }
+    .text{ margin-top:4px; font-size:13px; white-space:pre-wrap; }
+
+    .muted{ color:var(--muted); font-size:13px; }
+
+    textarea{
+      width:100%;
+      min-height:84px;
+      resize:vertical;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      font-family:inherit;
+      font-size:13px;
+      outline:none;
+    }
+
+    .rowBtn{
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:900;
+      font-size:13px;
+    }
+    .btnPrimary{
+      background:var(--blue);
+      color:#fff;
+    }
+    .btnPrimary:hover{ background:var(--blue2); }
+    .btnWarn{
+      background:var(--warnBg);
+      color:var(--warnText);
+      border:1px solid var(--warnBorder);
+    }
+    .btnWarn:hover{ filter:brightness(0.98); }
+
+    .infoGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:8px;
+    }
+    .infoBox{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#fff;
+    }
+    .lbl{
+      font-size:11px;
+      letter-spacing:.14em;
+      color:var(--muted);
+      font-weight:900;
+      margin:0 0 6px 0;
+    }
+    .val{
+      font-weight:900;
+      font-size:14px;
+      margin:0;
+      word-break:break-word;
+    }
+    .descBox{
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .input{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      outline:none;
+      font-size:13px;
+    }
+    .saveRow{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      align-items:center;
+      margin-top:10px;
+    }
+    .hint{ color:var(--muted); font-size:12px; }
+
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+      .twoCols{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
+
+    <div class="topbar">
+      <div class="crumbs">
+        <a href="/admin/menu-admin.html">Home</a> &nbsp;›&nbsp; <a href="/admin/menu-admin.html">Orders</a> &nbsp;›&nbsp; <span id="crumbJob">—</span>
+      </div>
+      <button class="btnBack" id="btnBack">← Back</button>
+    </div>
+
     <div class="hero">
-      <div>
-        <div class="title" id="jobTitle">Job Details</div>
-        <div class="sub" id="jobSub">—</div>
-      </div>
-      <div class="row">
-        <a href="/admin/menu-admin.html" class="pill" title="Back">← Back</a>
-      </div>
+      <div class="heroTitle" id="jobTitle">Job Details</div>
+      <p class="heroSub" id="jobSub">—</p>
     </div>
 
     <div class="grid">
-      <!-- LEFT: discussion -->
+      <!-- LEFT: DISCUSSION -->
       <div class="card">
-        <div class="h">DISCUSSION</div>
-        <div class="muted">Two separate windows to prevent accidental sending to customer.</div>
+        <div class="cardHead">
+          <div>
+            <div class="hTitle">DISCUSSION</div>
+            <div class="muted" style="margin-top:6px">Two separate windows to prevent accidental sending to customer.</div>
+          </div>
+          <div class="pill" title="Mode">
+            <span class="pillDot"></span>
+            <span>Comments</span>
+          </div>
+        </div>
 
-        <div class="split">
-          <!-- PUBLIC -->
-          <div class="subCard">
-            <div class="subHead">
-              <div class="subTitle">
-                Customer Comments <span class="badgePublic">Visible to customer</span>
-              </div>
+        <div class="twoCols">
+          <!-- Customer comments -->
+          <div class="panel">
+            <div class="panelTitleRow">
+              <div class="panelTitle">Customer Comments</div>
+              <div class="badge">Visible to customer</div>
             </div>
 
-            <div id="commentsPublic" class="commentsBox"></div>
+            <div class="list" id="commentsPublic">
+              <div class="muted">Loading…</div>
+            </div>
 
-            <div style="margin-top:10px">
-              <div class="muted" style="margin-bottom:6px">Send to customer</div>
-              <textarea id="commentTextPublic" rows="3" placeholder="Write a message to customer..."></textarea>
-              <div class="row" style="margin-top:8px; justify-content:flex-end">
-                <button class="btnPrimary" id="btnSendPublic">Send</button>
-              </div>
+            <div style="margin-top:10px" class="muted">Send to customer</div>
+            <textarea id="commentTextPublic" placeholder="Write a message to customer..."></textarea>
+
+            <div class="rowBtn">
+              <button class="btn btnPrimary" id="btnSendPublic">Send</button>
             </div>
           </div>
 
-          <!-- INTERNAL -->
-          <div class="subCard">
-            <div class="subHead">
-              <div class="subTitle">
-                Internal Memo <span class="badgeInternal">Staff only</span>
-              </div>
+          <!-- Internal memo -->
+          <div class="panel">
+            <div class="panelTitleRow">
+              <div class="panelTitle">Internal Memo</div>
+              <div class="badge badgeWarn">Staff only</div>
             </div>
 
-            <div id="commentsInternal" class="commentsBox"></div>
+            <div class="list" id="commentsInternal">
+              <div class="muted">Loading…</div>
+            </div>
 
-            <div style="margin-top:10px">
-              <div class="muted" style="margin-bottom:6px">Internal note (not visible to customer)</div>
-              <textarea id="commentTextInternal" rows="3" placeholder="Write internal memo..."></textarea>
-              <div class="row" style="margin-top:8px; justify-content:flex-end">
-                <button id="btnSendInternal" class="btnWarn">Send Internal</button>
-              </div>
+            <div style="margin-top:10px" class="muted">Internal note (not visible to customer)</div>
+            <textarea id="commentTextInternal" placeholder="Internal memo..."></textarea>
+
+            <div class="rowBtn">
+              <button class="btn btnWarn" id="btnSendInternal">Send Internal</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- RIGHT: job info -->
+      <!-- RIGHT: JOB INFO -->
       <div class="card">
-        <div class="h">JOB INFO</div>
+        <div class="cardHead">
+          <div class="hTitle">JOB INFO</div>
+          <div class="muted" id="jobUpdated">—</div>
+        </div>
 
-        <div class="row" style="align-items:flex-start">
-          <div style="min-width:160px">
-            <div class="muted">JOB NO</div>
-            <div style="font-weight:900" id="jobNo">—</div>
+        <div class="infoGrid">
+          <div class="infoBox">
+            <div class="lbl">JOB NO</div>
+            <div class="val" id="jobNo">—</div>
           </div>
-          <div>
-            <div class="muted">STATUS</div>
-            <div id="jobStatus"></div>
+
+          <div class="infoBox">
+            <div class="lbl">STATUS</div>
+            <div id="jobStatus">—</div>
           </div>
         </div>
 
-        <div style="margin-top:14px">
-          <div class="muted" style="margin-bottom:6px">Job Description</div>
-          <div id="jobDesc" class="descBox">—</div>
+        <div class="descBox">
+          <div class="lbl">Job Description</div>
+          <div class="val" id="jobDesc" style="font-weight:700">—</div>
         </div>
 
         <div style="margin-top:10px" class="muted" id="jobMeta">—</div>
 
-        <div style="margin-top:14px">
-          <div class="muted" style="margin-bottom:6px">Location (Google Maps link)</div>
-          <input id="locationUrl" placeholder="Paste Google Maps link here..." />
-          <div class="row" style="margin-top:8px; justify-content:flex-end">
-            <button id="btnSaveLoc">Save</button>
-          </div>
-          <div class="muted" id="locHint" style="margin-top:6px"></div>
+        <div style="margin-top:14px" class="lbl">Location (Google Maps link)</div>
+        <input class="input" id="locationUrl" placeholder="Paste Google Maps link here..." />
+
+        <div class="saveRow">
+          <div class="hint" id="locHint"></div>
+          <button class="btn btnPrimary" id="btnSaveLoc">Save</button>
         </div>
       </div>
     </div>
+
   </div>
 
 <script>
+(() => {
   const qs = new URLSearchParams(location.search);
   const jobKey = qs.get("jobKey"); // OMS order id
   const API = "/admin/api/oms";
 
-  function esc(s){ return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
-  function fmtTime(t){
-    if(!t) return "-";
+  // ---------------------------
+  // AUTH + API HELPERS
+  // ---------------------------
+  function getAccessToken() {
+    return sessionStorage.getItem("accessToken") || "";
+  }
+
+  async function apiFetch(url, options = {}) {
+    const token = getAccessToken();
+    const headers = { ...(options.headers || {}) };
+
+    // Only set content-type if we send a body (avoid breaking GET / caching)
+    if (!headers["Content-Type"] && options.method && options.method !== "GET") {
+      headers["Content-Type"] = "application/json";
+    }
+
+    if (token) headers["Authorization"] = "Bearer " + token;
+
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
+
+    // if not authenticated -> go login
+    if (res.status === 401) {
+      sessionStorage.removeItem("accessToken");
+      location.href = "/admin/login.html";
+      return res;
+    }
+
+    return res;
+  }
+
+  async function apiGet(url) {
+    const r = await apiFetch(url, { method: "GET" });
+    const j = await r.json().catch(() => null);
+    if (!r.ok) throw new Error(j?.message || j?.error || "request_failed");
+    return j;
+  }
+
+  async function apiPost(url, bodyObj) {
+    const r = await apiFetch(url, {
+      method: "POST",
+      body: JSON.stringify(bodyObj || {}),
+    });
+    const j = await r.json().catch(() => null);
+    if (!r.ok) throw new Error(j?.message || j?.error || "request_failed");
+    return j;
+  }
+
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function fmtTime(t) {
+    if (!t) return "-";
     const d = new Date(t);
-    if(isNaN(d.getTime())) return String(t);
+    if (isNaN(d.getTime())) return String(t);
     return d.toLocaleString();
   }
 
-  async function apiGet(url){
-    const r = await fetch(url, { credentials:"include" });
-    const j = await r.json().catch(()=>null);
-    if(!r.ok) throw new Error(j?.message || j?.error || "request_failed");
-    return j;
-  }
-  async function apiPost(url, body){
-    const r = await fetch(url, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      credentials:"include",
-      body: JSON.stringify(body || {})
-    });
-    const j = await r.json().catch(()=>null);
-    if(!r.ok) throw new Error(j?.message || j?.error || "request_failed");
-    return j;
-  }
-
-  function statusPill(status){
+  function statusPill(status) {
     const s = (status || "unknown").toLowerCase();
     let bg="#eef2ff", bd="rgba(37,99,235,.20)", tx="#1e40af";
     if (s.includes("pending")) { bg="#fefce8"; bd="rgba(202,138,4,.20)"; tx="#92400e"; }
@@ -241,7 +497,7 @@
     </span>`;
   }
 
-  function renderComment(c){
+  function renderComment(c) {
     const name = c.user?.display_name || c.author_name || "User";
     const pic = c.user?.picture_url || "/admin/default-avatar.png";
     const t = fmtTime(c.created_at);
@@ -261,29 +517,25 @@
     `;
   }
 
-  async function loadJob(){
-    if(!jobKey){
-      document.getElementById("jobSub").textContent = "Missing jobKey in URL.";
-      return;
+  async function ensureLoggedIn() {
+    // Basic check: require access token
+    const token = getAccessToken();
+    if (!token) {
+      location.href = "/admin/login.html";
+      return false;
     }
 
-    const jobRes = await apiGet(`${API}/jobs/${encodeURIComponent(jobKey)}`);
-    const job = jobRes.job;
-
-    document.getElementById("jobTitle").textContent = "Job Details";
-    document.getElementById("jobSub").textContent = `Order ID: ${job.id}`;
-    document.getElementById("jobNo").textContent = job.job_no || ("#" + job.id);
-    document.getElementById("jobStatus").innerHTML = statusPill(job.status);
-    document.getElementById("jobMeta").textContent =
-      `${job.project_name || "-"} • ${job.job_type || "-"} • Updated: ${fmtTime(job.updated_at)}`;
-
-    document.getElementById("jobDesc").textContent = job.jobDescription || "—";
-    document.getElementById("locationUrl").value = job.location_url || "";
-
-    await loadBothPanels();
+    // Verify token works
+    try {
+      await apiGet("/admin/api/me");
+      return true;
+    } catch {
+      // apiFetch already redirects on 401
+      return false;
+    }
   }
 
-  async function loadBothPanels(){
+  async function loadBothPanels() {
     const pubEl = document.getElementById("commentsPublic");
     const intEl = document.getElementById("commentsInternal");
 
@@ -300,71 +552,112 @@
     intEl.innerHTML = intl.length ? intl.map(renderComment).join("") : `<div class="muted">No internal memos yet</div>`;
   }
 
+  async function loadJob() {
+    if (!jobKey) {
+      document.getElementById("jobSub").textContent = "Missing jobKey in URL.";
+      return;
+    }
+
+    const jobRes = await apiGet(`${API}/jobs/${encodeURIComponent(jobKey)}`);
+    const job = jobRes.job;
+
+    document.getElementById("jobTitle").textContent = `${job.job_no || ("Job " + job.id)} • ${job.project_name || "-"}`;
+    document.getElementById("jobSub").textContent = "Status and discussion for this job";
+    document.getElementById("crumbJob").textContent = job.job_no || ("#" + job.id);
+
+    document.getElementById("jobNo").textContent = job.job_no || ("#" + job.id);
+    document.getElementById("jobStatus").innerHTML = statusPill(job.status);
+
+    document.getElementById("jobDesc").textContent = job.jobDescription || job.description || "—";
+    document.getElementById("locationUrl").value = job.location_url || "";
+
+    document.getElementById("jobUpdated").textContent = job.updated_at ? ("Updated: " + fmtTime(job.updated_at)) : "-";
+    document.getElementById("jobMeta").textContent =
+      `${job.project_name || "-"} • ${job.job_type || "-"} • Updated: ${fmtTime(job.updated_at)}`;
+
+    await loadBothPanels();
+  }
+
+  // ---------------------------
+  // UI EVENTS
+  // ---------------------------
+  document.getElementById("btnBack").addEventListener("click", () => {
+    // go back if possible, else go menu
+    if (history.length > 1) history.back();
+    else location.href = "/admin/menu-admin.html";
+  });
+
   document.getElementById("btnSendPublic").addEventListener("click", async () => {
     const ta = document.getElementById("commentTextPublic");
     const btn = document.getElementById("btnSendPublic");
     const text = String(ta.value || "").trim();
-    if(!text) return;
+    if (!text) return;
 
     btn.disabled = true;
-    try{
+    try {
       await apiPost(`${API}/jobs/${encodeURIComponent(jobKey)}/comments`, {
         text,
         is_internal: false
       });
       ta.value = "";
       await loadBothPanels();
-    }catch(e){
+    } catch (e) {
       alert("Send failed: " + e.message);
-    }finally{
+    } finally {
       btn.disabled = false;
     }
   });
 
   document.getElementById("btnSendInternal").addEventListener("click", async () => {
-  const ta = document.getElementById("commentTextInternal");
-  const btn = document.getElementById("btnSendInternal");
-  const text = String(ta.value || "").trim();
-  if(!text) return;
+    const ta = document.getElementById("commentTextInternal");
+    const btn = document.getElementById("btnSendInternal");
+    const body = String(ta.value || "").trim();
+    if (!body) return;
 
-  if(!confirm("Send this as INTERNAL MEMO (staff only)?")) return;
+    if (!confirm("Send this as INTERNAL MEMO (staff only)?")) return;
 
-  btn.disabled = true;
-  try{
-    await apiPost(`${API}/jobs/${encodeURIComponent(jobKey)}/internal`, {
-      body: text
-    });
-
-    ta.value = "";
-    await loadBothPanels();
-  }catch(e){
-    alert("Send failed: " + e.message);
-  }finally{
-    btn.disabled = false;
-  }
-});
+    btn.disabled = true;
+    try {
+      // IMPORTANT: internal memo endpoint (staff-only)
+      await apiPost(`${API}/jobs/${encodeURIComponent(jobKey)}/internal`, { body });
+      ta.value = "";
+      await loadBothPanels();
+    } catch (e) {
+      alert("Send failed: " + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   document.getElementById("btnSaveLoc").addEventListener("click", async () => {
     const url = String(document.getElementById("locationUrl").value || "").trim();
     const btn = document.getElementById("btnSaveLoc");
     const hint = document.getElementById("locHint");
-    if(!url) return;
+    if (!url) return;
 
     btn.disabled = true;
     hint.textContent = "";
-    try{
+    try {
       await apiPost(`${API}/jobs/${encodeURIComponent(jobKey)}/location`, { location_url: url });
       hint.textContent = "Saved ✓";
-    }catch(e){
+    } catch (e) {
       alert("Save failed: " + e.message);
-    }finally{
+    } finally {
       btn.disabled = false;
     }
   });
 
-  loadJob().catch(e => {
-    document.getElementById("jobSub").textContent = "Failed to load: " + e.message;
-  });
+  // ---------------------------
+  // START
+  // ---------------------------
+  (async () => {
+    const ok = await ensureLoggedIn();
+    if (!ok) return;
+    await loadJob();
+  })();
+
+})();
 </script>
+
 </body>
 </html>

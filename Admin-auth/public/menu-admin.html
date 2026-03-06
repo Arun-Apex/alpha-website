@@ -7,399 +7,555 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
     :root{
-      --bg:#f6f8fb; --card:#fff; --text:#101828; --muted:#667085;
-      --primary:#2563eb; --shadow:0 10px 30px rgba(16,24,40,.08);
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#101828;
+      --muted:#667085;
       --border:#e5e7eb;
+      --shadow:0 10px 24px rgba(16,24,40,.06);
+
+      --blue:#2563eb;
+      --blue2:#1e40af;
+
+      --pill:#eef2ff;
+      --pillText:#3730a3;
+
+      --warnBg:#fff7ed;
+      --warnText:#9a3412;
+
+      --okBg:#ecfdf3;
+      --okText:#027a48;
     }
-    *{ box-sizing:border-box }
+
+    *{ box-sizing:border-box; }
     body{
       margin:0;
-      font-family: Inter, "Noto Sans Thai", system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background:var(--bg); color:var(--text)
+      font-family: Inter, "Noto Sans Thai", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
     }
-    a{ color:inherit; text-decoration:none }
-    .wrap{ max-width:1100px; margin:0 auto; padding:16px 16px 40px }
-    .layout{ display:block }
+
+    .topbar{
+      background:#0b1220;
+      color:#fff;
+      padding:14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .topbar .title{ font-weight:700; letter-spacing:.2px; }
+    .topbar .right{ display:flex; gap:10px; align-items:center; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      font-size:13px;
+      color:#fff;
+      max-width: 48vw;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .btnTop{
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      color:#fff;
+      padding:8px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btnTop:hover{ background:rgba(255,255,255,.18); }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:22px 18px 40px;
+    }
 
     .hero{
-      background:
-        radial-gradient(1200px 500px at 10% 0%, #dbeafe 0%, rgba(219,234,254,0) 60%),
-        linear-gradient(135deg, #e9d5ff 0%, #dbeafe 45%, #c7f9f1 100%);
-      border-radius:26px; padding:18px 16px; box-shadow:var(--shadow);
-      position:relative; overflow:hidden;
-    }
-    .hero-top{ display:flex; align-items:center; gap:12px }
-    .logo{
-      width:38px; height:38px; border-radius:12px; background:#fff;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 6px 18px rgba(0,0,0,.08); font-weight:800; color:#111;
-    }
-    .brand{ font-weight:700 }
-    .bell{
-      margin-left:auto; width:34px; height:34px; border-radius:12px;
-      background:rgba(255,255,255,.7); display:flex; align-items:center; justify-content:center;
-      cursor:pointer;
-    }
-    .hello-card{ display:flex; gap:12px; align-items:center; margin-top:16px }
-    .hello-avatar{
-      width:56px;height:56px;border-radius:50%;
-      background:rgba(255,255,255,.7);
-      border:1px solid rgba(255,255,255,.75);
-      display:flex; align-items:center; justify-content:center;
-      font-weight:800;
-    }
-    .hello-text h2{ font-size:22px; margin:0 }
-    .hello-text p{ margin:2px 0 0; color:rgba(16,24,40,.7); font-size:13px }
-    .pillRow{ margin-top:10px; display:flex; gap:8px; flex-wrap:wrap }
-    .pill{
-      font-size:12px; font-weight:700; padding:6px 10px; border-radius:999px;
-      background:rgba(255,255,255,.75); border:1px solid rgba(229,231,235,.9);
-      color:#111;
-    }
-
-    .section-title{
-      margin:18px 4px 10px; font-size:11px; letter-spacing:.12em;
-      color:#98a2b3; font-weight:700;
-    }
-
-    .cards{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
+      grid-template-columns: 1.6fr 1fr;
+      gap:16px;
+      margin-bottom:16px;
     }
 
     .card{
       background:var(--card);
-      border-radius:18px;
-      padding:14px;
-      box-shadow:0 10px 24px rgba(16,24,40,.06);
-      border:1px solid rgba(229,231,235,.7);
-    }
-    .card h3{ margin:10px 0 4px; font-size:14px }
-    .card p{ margin:0; color:var(--muted); font-size:12px; line-height:1.4 }
-    .clickable{ cursor:pointer }
-    .clickable:hover{ transform:translateY(-1px); transition:.12s ease; box-shadow:0 14px 28px rgba(16,24,40,.08) }
-
-    .icon{
-      width:34px;height:34px;border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      background:#f2f4f7; border:1px solid #e5e7eb;
-    }
-
-    .cardHead{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px }
-    .cardHeadLeft{ display:flex; align-items:flex-start; gap:10px }
-
-    .smallMuted{ color:#98a2b3; font-size:12px }
-
-    .plusBtn{
-      width:30px;height:30px;border-radius:10px;
-      display:none; align-items:center; justify-content:center;
-      background:#f2f4f7; border:1px solid #e5e7eb;
-      color:#111; text-decoration:none; font-weight:900; cursor:pointer; flex:0 0 auto;
-    }
-    .plusBtn:hover{ background:#e9edf5 }
-
-    .account{
-      background:var(--card);
-      border-radius:18px;
-      padding:14px;
-      box-shadow:0 10px 24px rgba(16,24,40,.06);
-      border:1px solid rgba(229,231,235,.7);
-    }
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center;
-      padding:10px 14px; border-radius:12px;
-      border:1px solid #d1d5db; background:#fff; color:var(--primary);
-      font-weight:700; font-size:12px; text-decoration:none; cursor:pointer;
-    }
-
-    @media (min-width:900px){
-      .wrap{ padding:26px 18px 26px }
-      .layout{
-        display:grid;
-        grid-template-columns: 2fr 320px;
-        gap:18px;
-      }
-      .hero{ padding:22px }
-      .hello-text h2{ font-size:26px }
-    }
-
-    /* Recent jobs block */
-    .jobCard{
-      background:#fff;
-      border:1px solid rgba(229,231,235,.85);
+      border:1px solid var(--border);
       border-radius:16px;
-      padding:14px;
-      box-shadow:0 8px 18px rgba(16,24,40,.06);
+      box-shadow:var(--shadow);
+      padding:16px;
     }
-    .jobTop{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+
+    .heroLeft{
+      background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 45%, #cffafe 100%);
+      border:0;
     }
-    .jobLeft{ min-width:0; display:flex; flex-direction:column; gap:3px }
-    .jobId{
-      font-size:12px; color:#98a2b3; font-weight:600;
+
+    .brandRow{
+      display:flex;
+      align-items:center;
+      gap:12px;
     }
-    .jobName{
-      font-weight:900; font-size:15px; color:#101828;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    .logoDot{
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      background:#fff;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      color:#111827;
+      box-shadow:0 10px 20px rgba(16,24,40,.08);
     }
-    .jobMetaLine{
-      font-size:12px; color:#667085; margin-top:2px;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+
+    .hTitle{
+      margin:10px 0 2px;
+      font-size:26px;
+      font-weight:800;
     }
-    .jobRight{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
-      flex:0 0 auto;
+    .hSub{
+      margin:0;
+      color:#334155;
+      opacity:.9;
     }
+
+    .hint{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(255,255,255,.7);
+      color:#0f172a;
+      font-size:13px;
+    }
+
+    .heroRight .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .small{ font-size:12px; color:var(--muted); }
+    .big{ font-size:16px; font-weight:700; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      margin-top:16px;
+    }
+
+    .sectionTitle{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    .sectionTitle h3{
+      margin:0;
+      font-size:15px;
+      letter-spacing:.2px;
+    }
+    .chip{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--pill);
+      color:var(--pillText);
+      border:1px solid #c7d2fe;
+      font-weight:700;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
     .actionBtn{
-      display:inline-flex; align-items:center; justify-content:center;
-      padding:8px 10px; border-radius:12px;
-      border:1px solid #d1d5db; background:#fff;
-      font-weight:900; font-size:12px; color:#2563eb; text-decoration:none;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-start;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#fff;
+      cursor:pointer;
+      box-shadow:0 8px 18px rgba(16,24,40,.05);
     }
-    .actionBtn.disabled{
-      color:#98a2b3;
-      border-color:#e5e7eb;
-      cursor:not-allowed;
-      pointer-events:none;
+    .actionBtn:hover{
+      border-color:#c7d2fe;
+      transform: translateY(-1px);
+      transition:.12s ease;
+    }
+    .ico{
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#111827;
+      background:#f1f5f9;
+    }
+    .actionText b{ display:block; font-size:14px; }
+    .actionText span{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .list{
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .item{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      cursor:pointer;
+    }
+    .item:last-child{ border-bottom:none; }
+    .item:hover{ background:#f8fafc; }
+
+    .itemLeft b{
+      display:block;
+      font-size:13px;
+      margin-bottom:2px;
+    }
+    .itemLeft .meta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .status{
+      font-size:12px;
+      font-weight:800;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
       background:#f8fafc;
+      color:#0f172a;
+      height: fit-content;
+      white-space:nowrap;
+    }
+    .status.pending_admin{ background: #fff7ed; border-color:#fed7aa; color: var(--warnText); }
+    .status.done{ background: var(--okBg); border-color:#abefc6; color: var(--okText); }
+
+    .err{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #fecaca;
+      background:#fef2f2;
+      color:#7f1d1d;
+      font-size:13px;
+      display:none;
+    }
+
+    .foot{
+      margin-top:16px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    @media (max-width: 900px){
+      .hero{ grid-template-columns:1fr; }
+      .grid{ grid-template-columns:1fr; }
+      .actions{ grid-template-columns:1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="layout">
-      <div>
-        <div class="hero">
-          <div class="hero-top">
-            <div class="logo">O</div>
-            <div class="brand">Octopus Media</div>
-            <div class="bell" id="bell" title="Notifications">🔔</div>
-          </div>
 
-          <div class="hello-card">
-            <div class="hello-avatar">O</div>
-            <div class="hello-text">
-              <h2>Hello <span id="userName">...</span></h2>
-              <p>Let's get you started.</p>
-              <div class="pillRow">
-                <span class="pill" id="rolePill">-</span>
-                <span class="pill" id="idPill">ID: -</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section-title">QUICK ACTIONS</div>
-        <div class="cards">
-          <!-- Approvals -->
-          <div id="actApprovals" class="card clickable">
-            <div class="icon">✅</div>
-            <h3>Approvals</h3>
-            <p>Approvals queue and requests</p>
-          </div>
-
-          <!-- Orders (+ create) -->
-          <div id="actOrders" class="card clickable">
-            <div class="cardHead">
-              <div class="cardHeadLeft">
-                <div class="icon">🚚</div>
-                <div>
-                  <h3 style="margin:0;">Orders</h3>
-                  <p class="smallMuted" style="margin-top:4px;">Open orders and progress</p>
-                </div>
-              </div>
-              <span id="ordersPlus" class="plusBtn" title="Create New Job">+</span>
-            </div>
-          </div>
-
-          <!-- Job management -->
-          <div id="actManageJobs" class="card clickable">
-            <div class="icon">🗂️</div>
-            <h3>Manage Jobs</h3>
-            <p>Edit stages, status and assignments</p>
-          </div>
-
-          <!-- Recent jobs list card -->
-          <div id="actRecent" class="card clickable">
-            <div class="icon">🕘</div>
-            <div class="cardHead" style="margin-top:-34px; padding-left:46px;">
-              <div>
-                <h3 style="margin:0;">Recent Jobs</h3>
-                <p class="smallMuted" style="margin-top:4px;">Quick open recent jobs</p>
-              </div>
-            </div>
-
-            <div id="latestJobs" style="display:grid; gap:10px; margin-top:10px;"></div>
-
-            <div style="margin-top:10px; display:flex; justify-content:flex-end;">
-              <a href="/erp/ui/tasks.html" class="actionBtn">See more →</a>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-top:18px;color:#98a2b3;font-size:12px;text-align:center;">
-          OCTOPUS PRODUCTION SYSTEM V1.0
-        </div>
-      </div>
-
-      <div>
-        <div class="section-title">ACCOUNT</div>
-        <div class="account">
-          <h3 style="margin:0 0 6px;">Signed in</h3>
-          <p id="me" class="smallMuted" style="margin:0;">Loading profile…</p>
-          <div style="height:10px"></div>
-          <button id="logoutBtn" class="btn" type="button">Logout</button>
-        </div>
-      </div>
+  <div class="topbar">
+    <div class="title">Admin Dashboard</div>
+    <div class="right">
+      <div id="topUser" class="pill">Checking session…</div>
+      <button class="btnTop" onclick="logout()">Logout</button>
     </div>
   </div>
 
-  <script>
-    // per page config
-    window.ADMIN_MENU_ACTIONS = {
-      approvalsUrl: "/admin/app.html",
-      ordersUrl: "/admin/app.html",
-      recentUrl: "/app/orders/job-details.html",
-      manageJobsUrl: "/admin/app.html",
-      createUrl: "/admin/admin-job-create.html"
-    };
-  </script>
+  <div class="wrap">
 
-  <script src="./js/admin-dashboard.js"></script>
+    <div class="hero">
+      <div class="card heroLeft">
+        <div class="brandRow">
+          <div class="logoDot">O</div>
+          <div>
+            <div class="small">Octopus Media</div>
+            <div id="hello" class="hTitle">Hello</div>
+            <p class="hSub">Quick overview of OMS activity.</p>
+          </div>
+        </div>
+        <div class="hint">
+          If you get “Unauthorized”, your token is missing/expired.
+          Please re-login.
+        </div>
+        <div id="errBox" class="err"></div>
+      </div>
+
+      <div class="card heroRight">
+        <div class="sectionTitle">
+          <h3>Account</h3>
+          <span class="chip" id="roleChip">—</span>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="small">Signed in</div>
+            <div class="big" id="signedInName">—</div>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="small">Token</div>
+        <div class="small" id="tokenHint">—</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="sectionTitle">
+          <h3>Quick Actions</h3>
+          <span class="chip">Admin</span>
+        </div>
+
+        <div class="actions">
+          <div class="actionBtn" onclick="location.href='/admin/app.html'">
+            <div class="ico">📦</div>
+            <div class="actionText">
+              <b>Orders</b>
+              <span>Open OMS orders view</span>
+            </div>
+          </div>
+
+          <div class="actionBtn" onclick="location.href='/admin/app.html'">
+            <div class="ico">🛠️</div>
+            <div class="actionText">
+              <b>Manage Jobs</b>
+              <span>Edit stages, status</span>
+            </div>
+          </div>
+
+          <div class="actionBtn" onclick="alert('Approvals page not linked yet.')">
+            <div class="ico">✅</div>
+            <div class="actionText">
+              <b>Approvals</b>
+              <span>Queue and requests</span>
+            </div>
+          </div>
+
+          <div class="actionBtn" onclick="logout()">
+            <div class="ico">🚪</div>
+            <div class="actionText">
+              <b>Logout</b>
+              <span>Sign out of admin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sectionTitle">
+          <h3>Recent OMS Jobs</h3>
+          <span class="chip" id="recentChip">Loading…</span>
+        </div>
+
+        <div id="recentList" class="list">
+          <div class="item" style="cursor:default">
+            <div class="itemLeft">
+              <b>Loading…</b>
+              <div class="meta">Please wait</div>
+            </div>
+            <div class="status">…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">OCTOPUS PRODUCTION SYSTEM v1.0</div>
+  </div>
+
 <script>
-  // ===== CONFIG =====
-  const RECENT_API = "/admin/api/oms/orders/recent?limit=10";
+  const API = "/admin/api";
 
-  // IMPORTANT: job details expects ?jobKey=
-  const INTERNAL_JOB_URL = "/admin/app.html?jobKey=";
-
-  // ===== HELPERS =====
-  function esc(s){
-    return String(s ?? "").replace(/[&<>"']/g, m => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
+  function getToken(){
+    return sessionStorage.getItem("accessToken") || "";
   }
 
-  function fmtDue(d){
-    if(!d) return "";
-    // allow ISO date OR ms
-    const dt = typeof d === "number" ? new Date(d) : new Date(String(d));
-    if (isNaN(dt.getTime())) return "";
-    return dt.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"2-digit" });
+  function authHeaders(extra = {}){
+    const t = getToken();
+    return t ? { ...extra, Authorization: "Bearer " + t } : extra;
   }
 
-  function statusPill(status){
-    const s = (status || "unknown").toLowerCase();
-    let bg="#eef2ff", bd="rgba(37,99,235,.20)", tx="#1e40af";
-    if (s.includes("pending")) { bg="#fefce8"; bd="rgba(202,138,4,.20)"; tx="#92400e"; }
-    if (s.includes("approve")) { bg="#ecfeff"; bd="rgba(8,145,178,.22)"; tx="#155e75"; }
-    if (s.includes("done"))    { bg="#f0fdf4"; bd="rgba(34,197,94,.20)"; tx="#166534"; }
-    if (s.includes("cancel"))  { bg="#fef2f2"; bd="rgba(239,68,68,.20)"; tx="#991b1b"; }
-
-    return `<span style="
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid ${bd}; background:${bg}; color:${tx};
-      font-weight:900; font-size:11px; white-space:nowrap;
-    ">
-      <span style="width:8px;height:8px;border-radius:999px;background:${tx};box-shadow:0 0 0 3px rgba(0,0,0,.06)"></span>
-      ${esc(status || "-")}
-    </span>`;
+  async function apiFetch(url, options = {}){
+    const headers = authHeaders(options.headers || {});
+    return fetch(url, { ...options, headers, credentials: "include" });
   }
 
-  function jobBadgeFromJobNo(jobNo){
-    const j = (jobNo || "").trim();
-    if (/^D/i.test(j)) return `<span style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid rgba(37,99,235,.20);background:#eef2ff;color:#1e40af;white-space:nowrap;">JOB D</span>`;
-    if (/^S/i.test(j)) return `<span style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid rgba(2,132,199,.20);background:#ecfeff;color:#155e75;white-space:nowrap;">JOB S</span>`;
+  async function apiGet(url){
+    const r = await apiFetch(url);
+    const j = await r.json().catch(()=>null);
+    return { r, j };
+  }
+
+  function showErr(msg){
+    const b = document.getElementById("errBox");
+    b.style.display = "block";
+    b.textContent = msg;
+  }
+  function clearErr(){
+    const b = document.getElementById("errBox");
+    b.style.display = "none";
+    b.textContent = "";
+  }
+
+  async function checkLogin(){
+    clearErr();
+
+    const token = getToken();
+    document.getElementById("tokenHint").textContent =
+      token ? ("Access token: " + token.slice(0, 18) + "…") : "No access token in sessionStorage.";
+
+    if(!token){
+      location.href = "/admin/login.html";
+      return;
+    }
+
+    const { r, j } = await apiGet(API + "/me");
+    if(!r.ok){
+      location.href = "/admin/login.html";
+      return;
+    }
+
+    const user = (j && j.user) ? j.user : j;
+
+    const name = user?.displayName || user?.display_name || user?.username || "User";
+    const role = user?.systemRole || user?.role || "-";
+    const group = user?.groupKey || user?.group_key || "-";
+
+    document.getElementById("hello").textContent = "Hello " + name;
+    document.getElementById("signedInName").textContent = name;
+    document.getElementById("roleChip").textContent = (group !== "-" ? group : role);
+    document.getElementById("topUser").textContent = name + " • " + (group !== "-" ? group : role);
+  }
+
+  function statusClass(s){
+    const k = String(s||"").toLowerCase().trim();
+    if(k === "pending_admin") return "pending_admin";
+    if(k === "done" || k === "completed") return "done";
     return "";
   }
 
-  // ===== MAIN =====
-  async function loadRecentOmsJobs(){
-    const listEl = document.getElementById("latestJobs");
-    if (!listEl) return;
+  async function loadRecent(){
+    const list = document.getElementById("recentList");
+    const chip = document.getElementById("recentChip");
 
-    listEl.innerHTML = `<div style="color:#667085;font-size:13px;">Loading…</div>`;
+    chip.textContent = "Loading…";
 
-    try{
-      const resp = await fetch(RECENT_API, { credentials:"include" });
-      const data = await resp.json().catch(()=>null);
-
-      if (!resp.ok || !data?.ok){
-        listEl.innerHTML = `<div style="color:#b91c1c;font-size:13px;">Failed to load</div>`;
-        return;
-      }
-
-      const rows = data.jobs || [];
-      if (!rows.length){
-        listEl.innerHTML = `<div style="color:#667085;font-size:13px;">No orders yet</div>`;
-        return;
-      }
-
-      listEl.innerHTML = rows.map(row => {
-        const jobKey = row.id; // OMS order id
-        const internalUrl = INTERNAL_JOB_URL + encodeURIComponent(jobKey);
-
-        // OMS
-        const jobNo   = row.job_no || row.jobNo || "";
-        const jobType = row.job_type || row.jobType || "Job";
-        const due     = fmtDue(row.due_date || row.dueDate || row.dueDateMs);
-
-        // ClickUp optional (later)
-        const customId = row.customId || row.custom_id || ""; // JD-xxxxx
-        const mainTitle = row.name || row.title || jobNo || ("#" + row.id);
-
-        const subLine = `${esc(jobType)}${due ? " • Due " + esc(due) : ""}`;
-
-        const customIdHtml = customId ? `
-          <div style="font-size:12px;color:#98a2b3;font-weight:600;line-height:1;margin-bottom:4px;">
-            ${esc(customId)}
+    const { r, j } = await apiGet(API + "/oms/orders/recent?limit=10");
+    if(!r.ok || !j || !j.ok){
+      chip.textContent = "Failed";
+      list.innerHTML = `
+        <div class="item" style="cursor:default">
+          <div class="itemLeft">
+            <b>Failed to load</b>
+            <div class="meta">${(j && (j.message || j.error)) ? (j.message || j.error) : "Unknown error"}</div>
           </div>
-        ` : "";
-
-        return `
-          <div class="jobCard">
-            <div class="jobTop">
-              <div class="jobLeft">
-                ${customIdHtml}
-                <div class="jobName" style="color:#101828;font-weight:900;">
-                  ${esc(mainTitle)}
-                </div>
-                <div style="margin-top:4px;font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                  ${subLine}
-                </div>
-              </div>
-
-              <div class="jobRight">
-                ${jobBadgeFromJobNo(jobNo)}
-                ${statusPill(row.status)}
-                <!-- IMPORTANT: stop parent card click from hijacking this -->
-                <a class="actionBtn"
-                   href="${internalUrl}"
-                   target="_blank"
-                   rel="noreferrer"
-                   onclick="event.stopPropagation();">
-                  Open
-                </a>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-    }catch(e){
-      listEl.innerHTML = `<div style="color:#b91c1c;font-size:13px;">Network error</div>`;
+          <div class="status">error</div>
+        </div>`;
+      return;
     }
+
+    const jobs = j.jobs || [];
+    chip.textContent = jobs.length ? (jobs.length + " jobs") : "No jobs";
+
+    if(!jobs.length){
+      list.innerHTML = `
+        <div class="item" style="cursor:default">
+          <div class="itemLeft">
+            <b>No recent jobs</b>
+            <div class="meta">Nothing to show.</div>
+          </div>
+          <div class="status">—</div>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = "";
+    jobs.forEach(job => {
+      const id = job.id ?? job.job_id ?? job.order_id;
+      const jobNo = job.job_no || (id ? ("#" + id) : "Job");
+      const project = job.project_name || job.project || "-";
+      const customer = (job.customer && (job.customer.display_name || job.customer.displayName))
+        || job.customer_name || "-";
+      const st = job.status || "-";
+
+      const row = document.createElement("div");
+      row.className = "item";
+      row.onclick = () => {
+        // IMPORTANT: This only navigates. If app.html is not sending Authorization header,
+        // app.html will still show Unauthorized. That must be fixed inside app.html.
+        location.href = "/admin/app.html?jobKey=" + encodeURIComponent(id);
+      };
+
+      row.innerHTML = `
+        <div class="itemLeft">
+          <b>${escapeHtml(jobNo)} • ${escapeHtml(project)}</b>
+          <div class="meta">Customer: ${escapeHtml(customer)}</div>
+        </div>
+        <div class="status ${statusClass(st)}">${escapeHtml(st)}</div>
+      `;
+      list.appendChild(row);
+    });
   }
 
-  loadRecentOmsJobs();
+  async function logout(){
+    try{
+      await apiFetch(API + "/auth/logout", { method:"POST" });
+    }catch(e){}
+    sessionStorage.removeItem("accessToken");
+    location.href = "/admin/login.html";
+  }
+
+  function escapeHtml(str){
+    return String(str ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[m]));
+  }
+
+  (async () => {
+    await checkLogin();
+    await loadRecent();
+  })();
 </script>
- 
+
 </body>
 </html>

@@ -1,9 +1,9 @@
-// Admin-auth/routes/admin.oms.js  (FULL REPLACEMENT - CommonJS)
+// Admin-auth/routes/admin.oms.js
 const express = require("express");
 const { Pool } = require("pg");
+const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
-const { requireAuth } = require("../middleware/auth");
 
 // --------------------------------------------------
 // DB
@@ -19,7 +19,7 @@ const pool = new Pool({
 });
 
 // --------------------------------------------------
-// AUTH + ROLE HELPERS
+// ROLE HELPERS
 // --------------------------------------------------
 function isStaff(role) {
   const r = String(role || "").toLowerCase();
@@ -34,13 +34,10 @@ function isStaff(role) {
     "operator",
   ].includes(r);
 }
-
 function canEditComments(role) {
   const r = String(role || "").toLowerCase();
   return r === "owner" || r === "superadmin";
 }
-
-
 function requireStaff(req, res, next) {
   if (!req.user?.id) {
     return res.status(401).json({ ok: false, error: "not_authenticated" });
@@ -72,7 +69,7 @@ function normalizeJobRow(ojson, ujson) {
     description: ojson.description || null,
     job_description: ojson.job_description || null,
 
-    // UI-friendly
+    // UI friendly
     jobDescription,
 
     customer: ujson
@@ -95,8 +92,7 @@ async function resolveJobByKey(jobKey) {
   if (/^\d+$/.test(key)) {
     const r = await pool.query(
       `
-      SELECT to_jsonb(o) AS ojson,
-             to_jsonb(u) AS ujson
+      SELECT to_jsonb(o) AS ojson, to_jsonb(u) AS ujson
       FROM orders o
       LEFT JOIN users u ON u.id = o.customer_id
       WHERE o.id=$1
@@ -108,20 +104,17 @@ async function resolveJobByKey(jobKey) {
   }
 
   // 2) job_no
-  {
-    const r = await pool.query(
-      `
-      SELECT to_jsonb(o) AS ojson,
-             to_jsonb(u) AS ujson
-      FROM orders o
-      LEFT JOIN users u ON u.id = o.customer_id
-      WHERE o.job_no=$1
-      LIMIT 1
-      `,
-      [key]
-    );
-    if (r.rows.length) return r.rows[0];
-  }
+  const r2 = await pool.query(
+    `
+    SELECT to_jsonb(o) AS ojson, to_jsonb(u) AS ujson
+    FROM orders o
+    LEFT JOIN users u ON u.id = o.customer_id
+    WHERE o.job_no=$1
+    LIMIT 1
+    `,
+    [key]
+  );
+  if (r2.rows.length) return r2.rows[0];
 
   return null;
 }
@@ -135,8 +128,7 @@ router.get("/orders/recent", requireAuth(), async (req, res) => {
 
     const r = await pool.query(
       `
-      SELECT to_jsonb(o) AS ojson,
-             to_jsonb(u) AS ujson
+      SELECT to_jsonb(o) AS ojson, to_jsonb(u) AS ujson
       FROM orders o
       LEFT JOIN users u ON u.id = o.customer_id
       ORDER BY o.updated_at DESC NULLS LAST,
@@ -148,7 +140,6 @@ router.get("/orders/recent", requireAuth(), async (req, res) => {
     );
 
     const jobs = r.rows.map((row) => normalizeJobRow(row.ojson, row.ujson));
-
     res.json({ ok: true, jobs });
   } catch (e) {
     res.status(500).json({ ok: false, message: e.message });
@@ -165,8 +156,7 @@ router.get("/jobs/:id", requireAuth(), async (req, res) => {
 
     const r = await pool.query(
       `
-      SELECT to_jsonb(o) AS ojson,
-             to_jsonb(u) AS ujson
+      SELECT to_jsonb(o) AS ojson, to_jsonb(u) AS ujson
       FROM orders o
       LEFT JOIN users u ON u.id = o.customer_id
       WHERE o.id=$1
@@ -175,9 +165,8 @@ router.get("/jobs/:id", requireAuth(), async (req, res) => {
       [id]
     );
 
-    if (!r.rows.length) {
+    if (!r.rows.length)
       return res.status(404).json({ ok: false, message: "not_found" });
-    }
 
     const job = normalizeJobRow(r.rows[0].ojson, r.rows[0].ujson);
 
@@ -195,9 +184,7 @@ router.get("/jobs/:id", requireAuth(), async (req, res) => {
 });
 
 // --------------------------------------------------
-// COMMENTS
-// - staff view: includes internal
-// - non-staff: hides internal
+// COMMENTS (staff includes internal, others hide internal)
 // --------------------------------------------------
 router.get("/jobs/:id/comments", requireAuth(), async (req, res) => {
   try {
@@ -240,10 +227,8 @@ router.get("/jobs/:id/comments", requireAuth(), async (req, res) => {
 });
 
 // --------------------------------------------------
-// CREATE COMMENT
-// - staff can set internal
-// - non-staff forced public
-// expects body: { text, is_internal? }
+// CREATE COMMENT (staff may set internal)
+// body: { text, is_internal? }
 // --------------------------------------------------
 router.post("/jobs/:id/comments", requireAuth(), async (req, res) => {
   try {
@@ -286,17 +271,14 @@ router.post("/jobs/:id/comments", requireAuth(), async (req, res) => {
 
 // --------------------------------------------------
 // INTERNAL MEMO (staff only)
-// supports jobKey = numeric id OR job_no (D000005/S0009)
-// expects body: { body: "..." }
-// always forces is_internal=true
+// IMPORTANT: MUST run requireAuth() first, so req.user exists.
+// body: { body: "..." }
 // --------------------------------------------------
-router.post("/jobs/:jobKey/internal", requireStaff, async (req, res) => {
+router.post("/jobs/:jobKey/internal", requireAuth(), requireStaff, async (req, res) => {
   try {
     const { jobKey } = req.params;
     const body = String(req.body?.body || "").trim();
-    if (!body) {
-      return res.status(400).json({ ok: false, message: "body_required" });
-    }
+    if (!body) return res.status(400).json({ ok: false, message: "body_required" });
 
     const row = await resolveJobByKey(jobKey);
     if (!row) return res.status(404).json({ ok: false, message: "job_not_found" });
@@ -319,14 +301,10 @@ router.post("/jobs/:jobKey/internal", requireStaff, async (req, res) => {
       ]
     );
 
-    res.json({
-      ok: true,
-      id: ins.rows[0]?.id || null,
-      created_at: ins.rows[0]?.created_at || null,
-    });
+    res.json({ ok: true, id: ins.rows[0]?.id || null, created_at: ins.rows[0]?.created_at || null });
   } catch (err) {
     console.error("internal memo error", err);
-    res.status(500).json({ ok: false, message: "internal_proxy_error" });
+    res.status(500).json({ ok: false, message: "internal_memo_failed" });
   }
 });
 
@@ -337,15 +315,9 @@ router.post("/jobs/:id/location", requireAuth(), async (req, res) => {
   try {
     const id = Number(req.params.id);
     const url = String(req.body?.location_url || "").trim();
-    if (!id || !url) {
-      return res.status(400).json({ ok: false, message: "bad_request" });
-    }
+    if (!id || !url) return res.status(400).json({ ok: false, message: "bad_request" });
 
-    await pool.query(
-      `UPDATE orders SET location_url=$1, updated_at=NOW() WHERE id=$2`,
-      [url, id]
-    );
-
+    await pool.query(`UPDATE orders SET location_url=$1, updated_at=NOW() WHERE id=$2`, [url, id]);
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ ok: false, message: e.message });
