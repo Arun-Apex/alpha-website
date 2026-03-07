@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
     :root{
@@ -17,75 +17,28 @@
       --muted:#667085;
       --border:#e5e7eb;
       --shadow:0 10px 24px rgba(16,24,40,.06);
-
-      --blue:#2563eb;
-      --blue2:#1e40af;
-
-      --pill:#eef2ff;
-      --pillText:#3730a3;
-
-      --warnBg:#fff7ed;
-      --warnText:#9a3412;
-
-      --okBg:#ecfdf3;
-      --okText:#027a48;
+      --brand:#2563eb;
+      --brand2:#1e40af;
     }
 
     *{ box-sizing:border-box; }
+
     body{
       margin:0;
-      font-family: Inter, "Noto Sans Thai", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:var(--bg);
       color:var(--text);
+      font-family:Inter,"Noto Sans Thai",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
 
-    .topbar{
-      background:#0b1220;
-      color:#fff;
-      padding:14px 18px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-    }
-    .topbar .title{ font-weight:700; letter-spacing:.2px; }
-    .topbar .right{ display:flex; gap:10px; align-items:center; }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.16);
-      font-size:13px;
-      color:#fff;
-      max-width: 48vw;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-
-    .btnTop{
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.18);
-      color:#fff;
-      padding:8px 12px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    .btnTop:hover{ background:rgba(255,255,255,.18); }
-
-    .wrap{
+    .page{
       max-width:1100px;
-      margin:0 auto;
-      padding:22px 18px 40px;
+      margin:28px auto;
+      padding:0 18px 36px;
     }
 
-    .hero{
+    .heroGrid{
       display:grid;
-      grid-template-columns: 1.6fr 1fr;
+      grid-template-columns: 1.6fr .9fr;
       gap:16px;
       margin-bottom:16px;
     }
@@ -93,443 +46,611 @@
     .card{
       background:var(--card);
       border:1px solid var(--border);
-      border-radius:16px;
+      border-radius:18px;
       box-shadow:var(--shadow);
-      padding:16px;
+      padding:18px;
     }
 
-    .heroLeft{
-      background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 45%, #cffafe 100%);
-      border:0;
+    .heroCard{
+      background:linear-gradient(135deg, #dbeafe 0%, #ccfbf1 100%);
+      border:none;
+      min-height:160px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
     }
 
     .brandRow{
       display:flex;
       align-items:center;
+      justify-content:space-between;
       gap:12px;
     }
-    .logoDot{
+
+    .brandLeft{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logoBubble{
       width:36px;
       height:36px;
       border-radius:12px;
-      background:#fff;
+      background:rgba(255,255,255,.82);
       display:grid;
       place-items:center;
       font-weight:800;
-      color:#111827;
       box-shadow:0 10px 20px rgba(16,24,40,.08);
     }
 
-    .hTitle{
-      margin:10px 0 2px;
-      font-size:26px;
+    .brandName{
+      font-size:15px;
       font-weight:800;
     }
-    .hSub{
-      margin:0;
-      color:#334155;
-      opacity:.9;
-    }
 
-    .hint{
-      margin-top:12px;
-      padding:10px 12px;
+    .notifBubble{
+      width:32px;
+      height:32px;
       border-radius:12px;
-      background:rgba(255,255,255,.55);
-      border:1px solid rgba(255,255,255,.7);
-      color:#0f172a;
-      font-size:13px;
-    }
-
-    .heroRight .row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-    }
-    .small{ font-size:12px; color:var(--muted); }
-    .big{ font-size:16px; font-weight:700; }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:16px;
-      margin-top:16px;
-    }
-
-    .sectionTitle{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:10px;
-    }
-    .sectionTitle h3{
-      margin:0;
-      font-size:15px;
-      letter-spacing:.2px;
-    }
-    .chip{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      background:var(--pill);
-      color:var(--pillText);
-      border:1px solid #c7d2fe;
-      font-weight:700;
-    }
-
-    .actions{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-
-    .actionBtn{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:flex-start;
-      padding:14px 14px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:#fff;
-      cursor:pointer;
-      box-shadow:0 8px 18px rgba(16,24,40,.05);
-    }
-    .actionBtn:hover{
-      border-color:#c7d2fe;
-      transform: translateY(-1px);
-      transition:.12s ease;
-    }
-    .ico{
-      width:36px;
-      height:36px;
-      border-radius:12px;
+      background:rgba(255,255,255,.82);
       display:grid;
       place-items:center;
-      font-weight:900;
-      color:#111827;
-      background:#f1f5f9;
+      box-shadow:0 10px 20px rgba(16,24,40,.08);
+      font-size:15px;
     }
-    .actionText b{ display:block; font-size:14px; }
-    .actionText span{
-      display:block;
+
+    .heroMain{
+      display:flex;
+      align-items:flex-start;
+      gap:16px;
+      margin-top:12px;
+    }
+
+    .bigAvatar{
+      width:46px;
+      height:46px;
+      border-radius:999px;
+      background:rgba(255,255,255,.68);
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      flex:0 0 auto;
+    }
+
+    .helloText h1{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .helloText p{
+      margin:4px 0 0;
+      font-size:13px;
+      color:#475467;
+    }
+
+    .heroPills{
+      margin-top:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .metaPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.82);
+      border:1px solid rgba(255,255,255,.95);
       font-size:12px;
+      font-weight:700;
+      color:#111827;
+      max-width:100%;
+    }
+
+    .accountCard{
+      min-height:160px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .smallLabel{
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#98a2b3;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .accountName{
+      font-size:16px;
+      font-weight:800;
+      margin:0;
+    }
+
+    .accountSub{
+      font-size:13px;
       color:var(--muted);
       margin-top:2px;
     }
 
-    .list{
-      margin-top:10px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      overflow:hidden;
-      background:#fff;
+    .btn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:800;
+      font-size:13px;
+      transition:.12s ease;
     }
-    .item{
-      padding:12px 14px;
-      border-bottom:1px solid var(--border);
+
+    .btnGhost{
+      background:#fff;
+      color:var(--brand);
+      border:1px solid rgba(37,99,235,.18);
+    }
+
+    .btnGhost:hover{
+      background:#f8fbff;
+      border-color:rgba(37,99,235,.28);
+    }
+
+    .mainGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+
+    .stack{
+      display:grid;
+      gap:12px;
+    }
+
+    .sectionTitle{
+      margin:0 0 10px;
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#98a2b3;
+      font-weight:800;
+    }
+
+    .quickGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    .quickCard{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fff;
+      min-height:112px;
+      padding:14px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:.12s ease;
       display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .quickCard:hover{
+      transform:translateY(-1px);
+      box-shadow:0 14px 24px rgba(16,24,40,.07);
+      border-color:#dbe4ff;
+    }
+
+    .quickTop{
+      display:flex;
+      align-items:center;
       justify-content:space-between;
       gap:12px;
-      cursor:pointer;
     }
-    .item:last-child{ border-bottom:none; }
-    .item:hover{ background:#f8fafc; }
 
-    .itemLeft b{
-      display:block;
-      font-size:13px;
-      margin-bottom:2px;
+    .quickIcon{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid rgba(0,0,0,.05);
+      display:grid;
+      place-items:center;
+      font-size:16px;
     }
-    .itemLeft .meta{
+
+    .quickPlus{
+      width:28px;
+      height:28px;
+      border-radius:10px;
+      background:#f8fafc;
+      border:1px solid rgba(0,0,0,.05);
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      color:#111827;
+    }
+
+    .quickBody b{
+      display:block;
+      margin-top:12px;
+      font-size:14px;
+    }
+
+    .quickBody span{
+      display:block;
+      margin-top:4px;
       font-size:12px;
       color:var(--muted);
       line-height:1.4;
     }
 
-    .status{
+    .recentCard{
+      min-height:350px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .recentHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .recentHead h3{
+      margin:0;
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .recentHint{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .recentList{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height:390px;
+      overflow:auto;
+      padding-right:4px;
+    }
+
+    .jobRow{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .jobRow:hover{
+      border-color:#dbe4ff;
+      box-shadow:0 8px 20px rgba(16,24,40,.05);
+    }
+
+    .jobInfo{
+      min-width:0;
+      flex:1 1 auto;
+    }
+
+    .jobNo{
+      font-size:13px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-bottom:3px;
+    }
+
+    .jobMeta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 11px;
+      border-radius:999px;
       font-size:12px;
       font-weight:800;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:#f8fafc;
-      color:#0f172a;
-      height: fit-content;
       white-space:nowrap;
+      background:#fff7ed;
+      border:1px solid rgba(202,138,4,.22);
+      color:#92400e;
     }
-    .status.pending_admin{ background: #fff7ed; border-color:#fed7aa; color: var(--warnText); }
-    .status.done{ background: var(--okBg); border-color:#abefc6; color: var(--okText); }
 
-    .err{
-      margin-top:10px;
-      padding:10px 12px;
+    .dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:currentColor;
+      flex:0 0 auto;
+    }
+
+    .openBtn{
+      appearance:none;
+      border:1px solid rgba(37,99,235,.18);
+      background:#fff;
+      color:var(--brand);
       border-radius:12px;
-      border:1px solid #fecaca;
-      background:#fef2f2;
-      color:#7f1d1d;
-      font-size:13px;
-      display:none;
+      padding:9px 14px;
+      font-weight:800;
+      cursor:pointer;
+      flex:0 0 auto;
     }
 
-    .foot{
-      margin-top:16px;
-      text-align:center;
+    .openBtn:hover{
+      background:#f8fbff;
+      border-color:rgba(37,99,235,.28);
+    }
+
+    .emptyNote{
       color:var(--muted);
-      font-size:12px;
+      font-size:13px;
+      padding:6px 2px 0;
     }
 
-    @media (max-width: 900px){
-      .hero{ grid-template-columns:1fr; }
-      .grid{ grid-template-columns:1fr; }
-      .actions{ grid-template-columns:1fr; }
+    @media (max-width: 940px){
+      .heroGrid,
+      .mainGrid,
+      .quickGrid{
+        grid-template-columns:1fr;
+      }
     }
+	
+	.quickPlus{
+  cursor:pointer;
+  transition:0.15s;
+}
+
+.quickPlus:hover{
+  background:#eef2ff;
+  border-color:#c7d2fe;
+  transform:scale(1.05);
+}
+
   </style>
 </head>
-
 <body>
+  <div class="page">
 
-  <div class="topbar">
-    <div class="title">Admin Dashboard</div>
-    <div class="right">
-      <div id="topUser" class="pill">Checking session…</div>
-      <button class="btnTop" onclick="logout()">Logout</button>
+    <div class="heroGrid">
+      <div class="card heroCard">
+        <div class="brandRow">
+          <div class="brandLeft">
+            <div class="logoBubble">O</div>
+            <div>
+              <div class="brandName">Octopus Media</div>
+            </div>
+          </div>
+          <div class="notifBubble">🔔</div>
+        </div>
+
+        <div class="heroMain">
+          <div class="bigAvatar">O</div>
+          <div class="helloText">
+            <h1 id="helloText">Hello</h1>
+            <p>Let&apos;s get you started.</p>
+
+            <div class="heroPills">
+              <div class="metaPill" id="groupPill">Group: —</div>
+              <div class="metaPill" id="idPill">ID: —</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card accountCard">
+        <div>
+          <div class="smallLabel">Account</div>
+          <div class="accountName">Signed in</div>
+          <div class="accountSub" id="accountSub">—</div>
+        </div>
+        <div>
+          <button class="btn btnGhost" id="btnLogout">Logout</button>
+        </div>
+      </div>
     </div>
+
+    <div class="mainGrid">
+      <div class="stack">
+        <div>
+          <div class="sectionTitle">Quick Actions</div>
+          <div class="quickGrid">
+            <div class="quickCard" id="btnApprovals">
+              <div class="quickTop">
+                <div class="quickIcon">✅</div>
+              </div>
+              <div class="quickBody">
+                <b>Approvals</b>
+                <span>Approvals queue and requests</span>
+              </div>
+            </div>
+
+            <div class="quickCard" id="btnOrders">
+  <div class="quickTop">
+    <div class="quickIcon">🚚</div>
+
+    <div class="quickPlus" id="btnCreateOrder">+</div>
   </div>
 
-  <div class="wrap">
+  <div class="quickBody">
+    <b>Orders</b>
+    <span>Open orders and progress</span>
+  </div>
+</div>
 
-    <div class="hero">
-      <div class="card heroLeft">
-        <div class="brandRow">
-          <div class="logoDot">O</div>
-          <div>
-            <div class="small">Octopus Media</div>
-            <div id="hello" class="hTitle">Hello</div>
-            <p class="hSub">Quick overview of OMS activity.</p>
-          </div>
-        </div>
-        <div class="hint">
-          If you get “Unauthorized”, your token is missing/expired.
-          Please re-login.
-        </div>
-        <div id="errBox" class="err"></div>
-      </div>
-
-      <div class="card heroRight">
-        <div class="sectionTitle">
-          <h3>Account</h3>
-          <span class="chip" id="roleChip">—</span>
-        </div>
-
-        <div class="row">
-          <div>
-            <div class="small">Signed in</div>
-            <div class="big" id="signedInName">—</div>
-          </div>
-        </div>
-
-        <div style="height:10px"></div>
-        <div class="small">Token</div>
-        <div class="small" id="tokenHint">—</div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="sectionTitle">
-          <h3>Quick Actions</h3>
-          <span class="chip">Admin</span>
-        </div>
-
-        <div class="actions">
-          <div class="actionBtn" onclick="location.href='/admin/app.html'">
-            <div class="ico">📦</div>
-            <div class="actionText">
-              <b>Orders</b>
-              <span>Open OMS orders view</span>
-            </div>
-          </div>
-
-          <div class="actionBtn" onclick="location.href='/admin/app.html'">
-            <div class="ico">🛠️</div>
-            <div class="actionText">
-              <b>Manage Jobs</b>
-              <span>Edit stages, status</span>
-            </div>
-          </div>
-
-          <div class="actionBtn" onclick="alert('Approvals page not linked yet.')">
-            <div class="ico">✅</div>
-            <div class="actionText">
-              <b>Approvals</b>
-              <span>Queue and requests</span>
-            </div>
-          </div>
-
-          <div class="actionBtn" onclick="logout()">
-            <div class="ico">🚪</div>
-            <div class="actionText">
-              <b>Logout</b>
-              <span>Sign out of admin</span>
+            <div class="quickCard" id="btnManageJobs">
+              <div class="quickTop">
+                <div class="quickIcon">🗂️</div>
+              </div>
+              <div class="quickBody">
+                <b>Manage Jobs</b>
+                <span>Edit stages, status and assignments</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="sectionTitle">
-          <h3>Recent OMS Jobs</h3>
-          <span class="chip" id="recentChip">Loading…</span>
+      <div class="card recentCard">
+        <div class="recentHead">
+          <h3>Recent Jobs</h3>
+          <div class="recentHint" id="jobsCount">Loading…</div>
         </div>
 
-        <div id="recentList" class="list">
-          <div class="item" style="cursor:default">
-            <div class="itemLeft">
-              <b>Loading…</b>
-              <div class="meta">Please wait</div>
-            </div>
-            <div class="status">…</div>
-          </div>
+        <div id="recentJobs" class="recentList">
+          <div class="emptyNote">Loading recent jobs…</div>
         </div>
       </div>
     </div>
 
-    <div class="foot">OCTOPUS PRODUCTION SYSTEM v1.0</div>
   </div>
 
 <script>
+(() => {
   const API = "/admin/api";
 
-  function getToken(){
+  function getAccessToken(){
     return sessionStorage.getItem("accessToken") || "";
   }
 
-  function authHeaders(extra = {}){
-    const t = getToken();
-    return t ? { ...extra, Authorization: "Bearer " + t } : extra;
+  async function apiFetch(url, options = {}) {
+    const token = getAccessToken();
+
+    if (!token) {
+      location.href = "/admin/login.html";
+      return null;
+    }
+
+    const headers = { ...(options.headers || {}) };
+    headers["Authorization"] = "Bearer " + token;
+
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include"
+    });
+
+    if (res.status === 401) {
+      sessionStorage.removeItem("accessToken");
+      location.href = "/admin/login.html";
+      return null;
+    }
+
+    return res;
   }
 
-  async function apiFetch(url, options = {}){
-    const headers = authHeaders(options.headers || {});
-    return fetch(url, { ...options, headers, credentials: "include" });
-  }
-
-  async function apiGet(url){
-    const r = await apiFetch(url);
+  async function apiGetJson(url){
+    const r = await apiFetch(url, { method:"GET" });
+    if (!r) return null;
     const j = await r.json().catch(()=>null);
-    return { r, j };
+    if (!r.ok) throw new Error(j?.message || j?.error || "request_failed");
+    return j;
   }
 
-  function showErr(msg){
-    const b = document.getElementById("errBox");
-    b.style.display = "block";
-    b.textContent = msg;
+  function esc(str){
+    return String(str ?? "").replace(/[&<>"']/g, (m) => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[m]));
   }
-  function clearErr(){
-    const b = document.getElementById("errBox");
-    b.style.display = "none";
-    b.textContent = "";
+
+  async function loadMe(){
+    const data = await apiGetJson(API + "/me");
+    const user = data?.user || {};
+
+    const displayName = user.display_name || user.displayName || user.username || "User";
+    const group = user.groupKey || user.group || "—";
+    const userId = user.id || "—";
+
+    document.getElementById("helloText").textContent = `Hello ${displayName}`;
+    document.getElementById("accountSub").textContent = user.username || displayName;
+    document.getElementById("groupPill").textContent = `Group: ${group}`;
+    document.getElementById("idPill").textContent = `ID: ${userId}`;
   }
 
-  async function checkLogin(){
-    clearErr();
+  function renderStatus(status){
+    return `
+      <span class="statusPill">
+        <span class="dot"></span>
+        ${esc(status || "-")}
+      </span>
+    `;
+  }
 
-    const token = getToken();
-    document.getElementById("tokenHint").textContent =
-      token ? ("Access token: " + token.slice(0, 18) + "…") : "No access token in sessionStorage.";
+  async function loadRecentJobs(){
+    const box = document.getElementById("recentJobs");
+    const count = document.getElementById("jobsCount");
 
-    if(!token){
-      location.href = "/admin/login.html";
+    box.innerHTML = `<div class="emptyNote">Loading recent jobs…</div>`;
+
+    const data = await apiGetJson(API + "/oms/orders/recent?limit=10");
+    const jobs = data?.jobs || [];
+
+    count.textContent = `${jobs.length} item${jobs.length === 1 ? "" : "s"}`;
+
+    if (!jobs.length){
+      box.innerHTML = `<div class="emptyNote">No recent jobs found.</div>`;
       return;
     }
 
-    const { r, j } = await apiGet(API + "/me");
-    if(!r.ok){
-      location.href = "/admin/login.html";
-      return;
-    }
+    box.innerHTML = jobs.map(j => {
+      const id = j.id ?? j.job_id;
+      const jobNo = j.job_no || ("#" + id);
+      const project = j.project_name || "-";
+      const type = j.job_type || "-";
+      const customer = j.customer?.display_name || "-";
 
-    const user = (j && j.user) ? j.user : j;
-
-    const name = user?.displayName || user?.display_name || user?.username || "User";
-    const role = user?.systemRole || user?.role || "-";
-    const group = user?.groupKey || user?.group_key || "-";
-
-    document.getElementById("hello").textContent = "Hello " + name;
-    document.getElementById("signedInName").textContent = name;
-    document.getElementById("roleChip").textContent = (group !== "-" ? group : role);
-    document.getElementById("topUser").textContent = name + " • " + (group !== "-" ? group : role);
-  }
-
-  function statusClass(s){
-    const k = String(s||"").toLowerCase().trim();
-    if(k === "pending_admin") return "pending_admin";
-    if(k === "done" || k === "completed") return "done";
-    return "";
-  }
-
-  async function loadRecent(){
-    const list = document.getElementById("recentList");
-    const chip = document.getElementById("recentChip");
-
-    chip.textContent = "Loading…";
-
-    const { r, j } = await apiGet(API + "/oms/orders/recent?limit=10");
-    if(!r.ok || !j || !j.ok){
-      chip.textContent = "Failed";
-      list.innerHTML = `
-        <div class="item" style="cursor:default">
-          <div class="itemLeft">
-            <b>Failed to load</b>
-            <div class="meta">${(j && (j.message || j.error)) ? (j.message || j.error) : "Unknown error"}</div>
+      return `
+        <div class="jobRow">
+          <div class="jobInfo">
+            <div class="jobNo">${esc(jobNo)}</div>
+            <div class="jobMeta">${esc(project)} • ${esc(type)}</div>
+            <div class="jobMeta">Customer: ${esc(customer)}</div>
           </div>
-          <div class="status">error</div>
-        </div>`;
-      return;
-    }
 
-    const jobs = j.jobs || [];
-    chip.textContent = jobs.length ? (jobs.length + " jobs") : "No jobs";
+          ${renderStatus(j.status)}
 
-    if(!jobs.length){
-      list.innerHTML = `
-        <div class="item" style="cursor:default">
-          <div class="itemLeft">
-            <b>No recent jobs</b>
-            <div class="meta">Nothing to show.</div>
-          </div>
-          <div class="status">—</div>
-        </div>`;
-      return;
-    }
-
-    list.innerHTML = "";
-    jobs.forEach(job => {
-      const id = job.id ?? job.job_id ?? job.order_id;
-      const jobNo = job.job_no || (id ? ("#" + id) : "Job");
-      const project = job.project_name || job.project || "-";
-      const customer = (job.customer && (job.customer.display_name || job.customer.displayName))
-        || job.customer_name || "-";
-      const st = job.status || "-";
-
-      const row = document.createElement("div");
-      row.className = "item";
-      row.onclick = () => {
-        // IMPORTANT: This only navigates. If app.html is not sending Authorization header,
-        // app.html will still show Unauthorized. That must be fixed inside app.html.
-        location.href = "/admin/app.html?jobKey=" + encodeURIComponent(id);
-      };
-
-      row.innerHTML = `
-        <div class="itemLeft">
-          <b>${escapeHtml(jobNo)} • ${escapeHtml(project)}</b>
-          <div class="meta">Customer: ${escapeHtml(customer)}</div>
+          <button class="openBtn" data-job-id="${esc(id)}">Open</button>
         </div>
-        <div class="status ${statusClass(st)}">${escapeHtml(st)}</div>
       `;
-      list.appendChild(row);
+    }).join("");
+
+    box.querySelectorAll(".openBtn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-job-id");
+        location.href = "/admin/app.html?jobKey=" + encodeURIComponent(id);
+      });
+    });
+
+    box.querySelectorAll(".jobRow").forEach((row, idx) => {
+      row.addEventListener("click", () => {
+        const btn = row.querySelector(".openBtn");
+        const id = btn?.getAttribute("data-job-id");
+        if (id) location.href = "/admin/app.html?jobKey=" + encodeURIComponent(id);
+      });
     });
   }
 
@@ -541,21 +662,38 @@
     location.href = "/admin/login.html";
   }
 
-  function escapeHtml(str){
-    return String(str ?? "").replace(/[&<>"']/g, m => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
-    }[m]));
-  }
+  document.getElementById("btnLogout").addEventListener("click", logout);
 
-  (async () => {
-    await checkLogin();
-    await loadRecent();
+  document.getElementById("btnManageJobs").addEventListener("click", () => {
+    location.href = "/admin/app.html";
+  });
+
+  // Orders card → open job list
+document.getElementById("btnOrders").addEventListener("click", () => {
+  location.href = "/admin/app.html";
+});
+
+// + button → create job
+document.getElementById("btnCreateOrder").addEventListener("click", (e) => {
+  e.stopPropagation(); // prevents card click
+  location.href = "/admin/admin-job-create.html";
+});
+
+  document.getElementById("btnApprovals").addEventListener("click", () => {
+    alert("Approvals page not linked yet.");
+  });
+
+  (async function boot(){
+    try{
+      await loadMe();
+      await loadRecentJobs();
+    }catch(e){
+      console.error(e);
+      sessionStorage.removeItem("accessToken");
+      location.href = "/admin/login.html";
+    }
   })();
+})();
 </script>
-
 </body>
 </html>

@@ -1,13 +1,9 @@
-// Admin-auth/routes/admin.oms.js
 const express = require("express");
 const { Pool } = require("pg");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
-// --------------------------------------------------
-// DB
-// --------------------------------------------------
 const pool = new Pool({
   host: process.env.OMS_DB_HOST || "n8n_postgres",
   port: Number(process.env.OMS_DB_PORT || 5432),
@@ -21,28 +17,57 @@ const pool = new Pool({
 // --------------------------------------------------
 // ROLE HELPERS
 // --------------------------------------------------
-function isStaff(role) {
-  const r = String(role || "").toLowerCase();
-  return [
-    "admin",
+function getUserRole(user) {
+  return String(user?.systemRole || user?.role || "").toLowerCase();
+}
+
+function getUserGroup(user) {
+  return String(user?.groupKey || user?.group || "").toLowerCase();
+}
+
+function isStaffUser(user) {
+  const role = getUserRole(user);
+  const group = getUserGroup(user);
+
+  if ([
     "owner",
     "superadmin",
-    "user",
-    "team",
-    "staff",
+    "admin",
     "supervisor",
     "operator",
-  ].includes(r);
+    "staff",
+    "team"
+  ].includes(role)) return true;
+
+  if ([
+    "admin",
+    "supervisor",
+    "graphic",
+    "print",
+    "install"
+  ].includes(group)) return true;
+
+  return false;
 }
-function canEditComments(role) {
-  const r = String(role || "").toLowerCase();
-  return r === "owner" || r === "superadmin";
+
+function canEditComments(user) {
+  const role = getUserRole(user);
+  return role === "owner" || role === "superadmin";
 }
+
+function displayAuthorRole(user) {
+  return getUserRole(user) || getUserGroup(user) || "staff";
+}
+
+function displayAuthorName(user) {
+  return user?.displayName || user?.display_name || user?.username || "staff";
+}
+
 function requireStaff(req, res, next) {
   if (!req.user?.id) {
     return res.status(401).json({ ok: false, error: "not_authenticated" });
   }
-  if (!isStaff(req.user.role)) {
+  if (!isStaffUser(req.user)) {
     return res.status(403).json({ ok: false, error: "staff_only" });
   }
   next();
@@ -65,11 +90,8 @@ function normalizeJobRow(ojson, ujson) {
     due_date: ojson.required_completion_date || null,
     location_url: ojson.location_url || null,
 
-    // raw db fields (keep)
     description: ojson.description || null,
     job_description: ojson.job_description || null,
-
-    // UI friendly
     jobDescription,
 
     customer: ujson
@@ -88,7 +110,6 @@ function normalizeJobRow(ojson, ujson) {
 async function resolveJobByKey(jobKey) {
   const key = String(jobKey || "").trim();
 
-  // 1) numeric id
   if (/^\d+$/.test(key)) {
     const r = await pool.query(
       `
@@ -103,7 +124,6 @@ async function resolveJobByKey(jobKey) {
     if (r.rows.length) return r.rows[0];
   }
 
-  // 2) job_no
   const r2 = await pool.query(
     `
     SELECT to_jsonb(o) AS ojson, to_jsonb(u) AS ujson
@@ -147,7 +167,7 @@ router.get("/orders/recent", requireAuth(), async (req, res) => {
 });
 
 // --------------------------------------------------
-// JOB DETAIL (by numeric id)
+// JOB DETAIL
 // --------------------------------------------------
 router.get("/jobs/:id", requireAuth(), async (req, res) => {
   try {
@@ -165,8 +185,9 @@ router.get("/jobs/:id", requireAuth(), async (req, res) => {
       [id]
     );
 
-    if (!r.rows.length)
+    if (!r.rows.length) {
       return res.status(404).json({ ok: false, message: "not_found" });
+    }
 
     const job = normalizeJobRow(r.rows[0].ojson, r.rows[0].ujson);
 
@@ -174,8 +195,8 @@ router.get("/jobs/:id", requireAuth(), async (req, res) => {
       ok: true,
       job,
       perms: {
-        isStaff: isStaff(req.user?.role),
-        canEditComments: canEditComments(req.user?.role),
+        isStaff: isStaffUser(req.user),
+        canEditComments: canEditComments(req.user),
       },
     });
   } catch (e) {
@@ -184,14 +205,15 @@ router.get("/jobs/:id", requireAuth(), async (req, res) => {
 });
 
 // --------------------------------------------------
-// COMMENTS (staff includes internal, others hide internal)
+// COMMENTS
+// staff sees internal too
 // --------------------------------------------------
 router.get("/jobs/:id/comments", requireAuth(), async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ ok: false, message: "bad_id" });
 
-    const staff = isStaff(req.user?.role);
+    const staff = isStaffUser(req.user);
 
     const r = await pool.query(
       `
@@ -227,7 +249,7 @@ router.get("/jobs/:id/comments", requireAuth(), async (req, res) => {
 });
 
 // --------------------------------------------------
-// CREATE COMMENT (staff may set internal)
+// CREATE COMMENT
 // body: { text, is_internal? }
 // --------------------------------------------------
 router.post("/jobs/:id/comments", requireAuth(), async (req, res) => {
@@ -238,7 +260,7 @@ router.post("/jobs/:id/comments", requireAuth(), async (req, res) => {
     const text = String(req.body?.text || "").trim();
     if (!text) return res.status(400).json({ ok: false, message: "empty_text" });
 
-    const staff = isStaff(req.user?.role);
+    const staff = isStaffUser(req.user);
     const is_internal = staff && req.body?.is_internal === true;
 
     const ins = await pool.query(
@@ -252,8 +274,8 @@ router.post("/jobs/:id/comments", requireAuth(), async (req, res) => {
         id,
         is_internal,
         req.user?.id || null,
-        req.user?.role || "staff",
-        req.user?.display_name || req.user?.username || "staff",
+        displayAuthorRole(req.user),
+        displayAuthorName(req.user),
         text,
       ]
     );
@@ -270,8 +292,7 @@ router.post("/jobs/:id/comments", requireAuth(), async (req, res) => {
 });
 
 // --------------------------------------------------
-// INTERNAL MEMO (staff only)
-// IMPORTANT: MUST run requireAuth() first, so req.user exists.
+// INTERNAL MEMO (dedicated route)
 // body: { body: "..." }
 // --------------------------------------------------
 router.post("/jobs/:jobKey/internal", requireAuth(), requireStaff, async (req, res) => {
@@ -295,13 +316,17 @@ router.post("/jobs/:jobKey/internal", requireAuth(), requireStaff, async (req, r
       [
         job.id,
         req.user?.id || null,
-        req.user?.role || "staff",
-        req.user?.display_name || req.user?.username || "staff",
+        displayAuthorRole(req.user),
+        displayAuthorName(req.user),
         body,
       ]
     );
 
-    res.json({ ok: true, id: ins.rows[0]?.id || null, created_at: ins.rows[0]?.created_at || null });
+    res.json({
+      ok: true,
+      id: ins.rows[0]?.id || null,
+      created_at: ins.rows[0]?.created_at || null,
+    });
   } catch (err) {
     console.error("internal memo error", err);
     res.status(500).json({ ok: false, message: "internal_memo_failed" });
@@ -317,7 +342,11 @@ router.post("/jobs/:id/location", requireAuth(), async (req, res) => {
     const url = String(req.body?.location_url || "").trim();
     if (!id || !url) return res.status(400).json({ ok: false, message: "bad_request" });
 
-    await pool.query(`UPDATE orders SET location_url=$1, updated_at=NOW() WHERE id=$2`, [url, id]);
+    await pool.query(
+      `UPDATE orders SET location_url=$1, updated_at=NOW() WHERE id=$2`,
+      [url, id]
+    );
+
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ ok: false, message: e.message });
