@@ -11,6 +11,7 @@ const meRoute = require("./routes/me");
 const adminUsersRoute = require("./routes/admin.users");
 const adminUsergroupsRoute = require("./routes/admin.usergroups");
 const adminOmsRoute = require("./routes/admin.oms");
+const adminFlowAccountRoute = require("./routes/admin.flowaccount");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -27,6 +28,10 @@ app.use(cookieParser());
 app.use("/admin", express.static(path.join(__dirname, "public")));
 
 app.get("/health", (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+
+// FlowAccount Mount
+app.use("/admin/api/flowaccount", adminFlowAccountRoute);
+
 
 // APIs
 app.use("/admin/api/usergroups", usergroupsRoute);

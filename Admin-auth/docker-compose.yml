@@ -22,6 +22,12 @@ services:
       - OMS_DB_USER=n8n
       - OMS_DB_PASSWORD=Octopus@1919
 
+      # FlowAccount
+      - FLOWACCOUNT_API_BASE_URL=https://openapi.flowaccount.com/test
+      - FLOWACCOUNT_CLIENT_ID=uroekwib-sandbox-client
+      - FLOWACCOUNT_CLIENT_SECRET=dXJvZWt3aWItc2FuZGJveC1jbGllbnQgIDIzLzIvMjAyNg==
+      - FLOWACCOUNT_SCOPE=flowaccount-api
+
     depends_on:
       - mongo
     restart: unless-stopped
